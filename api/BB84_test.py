@@ -40,7 +40,25 @@ def test_prune_invalid():
     print(f"New:      {pruned}")
     test_result("prune_invalid", "PASS")
 
+
+def test_sample_bits():
+    bits = get_random_numbers_quantum(10)
+    sampleIndices = sample(range(len(bits)), 5)
+    sampled = sample_bits(bits, sampleIndices)
+    print(f"Sample: {sampled}")
+    print(f"Bits: {bits}")
+    test_result("sample_bits", "PASS")
+
+
+def test_bb84():
+    key = bb84(50)
+    print(key)
+    test_result("bb84", "PASS")
+
+
 test_get_random_numbers_quantum()
 test_encode_qubits()
 test_measure_qubits()
 test_prune_invalid()
+test_sample_bits()
+test_bb84()
