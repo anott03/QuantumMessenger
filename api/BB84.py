@@ -1,7 +1,7 @@
-from random import randint
+from random import randint, sample
 from qiskit import QuantumCircuit
-from qiskit import Aer, assemble, transpile
-
+from qiskit import Aer, assemble
+from numpy import mod
 
 sim = Aer.get_backend("aer_simulator")
 
@@ -48,4 +48,23 @@ def measure_qubits(bits: list, bases: list):
         # Run the circuit and fetch the measured bit from the classical register
         meas.append(int(sim.run(qobj).result().get_memory()[0]))
     return meas
+
+
+def prune_invalid(bases1, bases2, bits):
+    # only keep the bits in which bases were the same, so the measurement is assured to be the same
+    valid_bits = []
+    for base1, base2, bit in zip(bases1, bases2, bits):
+        if base1 == base2:  # bit is only valid if its bases were the same
+            valid_bits.append(bit)
+    return valid_bits
+
+
+def sample_bits(bits: list, sampleIndices: list):
+    # "Publicly" compare a subset of final key to ensure that the protocol worked
+    sampled = []
+    for i in sampleIndices:
+        # Have to calculate i modulo length of bits since we are changing the list length as we go, so we don't access indices out of range
+        # We pop the element each time so it gets removed from the bits, since any bits they publicly share should not be part of their final secret key
+        sampled.append(bits.pop(mod(i, len(bits))))
+    return sampled
 
