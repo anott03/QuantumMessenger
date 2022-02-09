@@ -68,3 +68,27 @@ def sample_bits(bits: list, sampleIndices: list):
         sampled.append(bits.pop(mod(i, len(bits))))
     return sampled
 
+
+# TODO write function that removes the sampled bits and returns a final key
+
+
+# --- Implementing the Protocol ---
+def bb84(keyLen: int):
+    initialBits = get_random_numbers_quantum(keyLen)
+    bases1 = get_random_numbers_quantum(keyLen)
+    encoded = encode_qubits(initialBits, bases1)
+    # * transmit to other person *
+    bases2 = get_random_numbers_quantum(keyLen)
+    decoded = measure_qubits(encoded, bases2)
+    pruned1 = prune_invalid(bases1, bases2, initialBits)
+    pruned2 = prune_invalid(bases1, bases2, decoded)
+    sampleIndices = sample(range(len(initialBits)), keyLen//5)
+    sampled1 = sample_bits(pruned1, sampleIndices)
+    sampled2 = sample_bits(pruned2, sampleIndices)
+    if sampled1 == sampled2:
+        print("Protocol success!")
+        return "".join([str(x) for x in decoded])
+    else:
+        print("Sample mismatch...")
+
+
