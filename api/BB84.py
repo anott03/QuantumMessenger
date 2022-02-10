@@ -69,9 +69,6 @@ def sample_bits(bits: list, sampleIndices: list):
     return sampled
 
 
-# TODO write function that removes the sampled bits and returns a final key
-
-
 # --- Implementing the Protocol ---
 def bb84(keyLen: int):
     initialBits = get_random_numbers_quantum(keyLen)
