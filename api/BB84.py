@@ -14,10 +14,6 @@ def get_random_numbers_quantum(n: int) -> list:
     return sim.run(qobj).result().get_memory()
 
 
-def getRandomNumbersClassical(n: int) -> list:
-    return [randint(0, 1) for _ in range(n)]
-
-
 def encode_qubits(bits: list, bases: list):
     encodedBits = []
     # choose random basis (x or z)
