@@ -11,14 +11,14 @@ def get_random_numbers_quantum(n: int) -> list:
     qc.h(0)
     qc.measure_all()
     qobj = assemble(qc, shots=n, memory=True)
-    return sim.run(qobj).result().get_memory()
+    return [int(item) for item in sim.run(qobj).result().get_memory()]
 
 
 def encode_qubits(bits: list, bases: list):
     encodedBits = []
     # choose random basis (x or z)
-    # 0 --> X basis
-    # 1 --> Z basis
+    # 0 --> Z basis
+    # 1 --> X basis
     if not bases:
         bases = get_random_numbers_quantum(len(bits))
     # encode a qubit into superposition of chosen basis
@@ -26,7 +26,7 @@ def encode_qubits(bits: list, bases: list):
         qc = QuantumCircuit(1, 1)
         if bit == 1:
             qc.x(0)
-        if base == 0:  # X basis
+        if base == 1:  # X basis
             qc.h(0)
         encodedBits.append(qc)
     return encodedBits
