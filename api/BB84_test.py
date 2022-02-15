@@ -10,6 +10,7 @@ def test_get_random_numbers_quantum():
     for i in range(1, 102, 10):
         data = get_random_numbers_quantum(i)
         assert len(data) == i
+
     test_result("get_random_numbers_quantum", "PASS")
 
 
@@ -22,11 +23,11 @@ def test_encode_qubits():
 
 
 def test_measure_qubits():
-    bases = get_random_numbers_quantum(5)
-    bits = get_random_numbers_quantum(5)
+    bits = get_random_numbers_quantum(10)
+    bases = get_random_numbers_quantum(10)
     encodedBits = encode_qubits(bits, bases)
     decodedBits = measure_qubits(encodedBits, bases)
-    print(decodedBits)
+    assert encodedBits == decodedBits
     test_result("measure_qubits", "PASS")
 
 
