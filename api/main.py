@@ -4,6 +4,16 @@ from qiskit import QuantumCircuit
 from qiskit import Aer, assemble
 
 
+"""
+--- API Flow ---
+- Client requests key generation for a specific user and message
+- Portion of quantum computer allocated to that user runs BB84 protocol
+    - Quantum teleportation to send qubits to the portion allocated to the receiver
+- Keys are stored classically in a user-specific dictionary after the protocol is run & measured
+- Client can retrieve keys for a specific message id after they are generated
+    - Encryption happens classically on the client side
+"""
+
 class User(BaseModel):
     username: str
 
