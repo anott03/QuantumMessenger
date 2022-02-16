@@ -15,6 +15,13 @@ from qiskit import Aer, assemble
 """
 
 
+class User:
+    def __init__(self, username, keys, messages):
+        self.username = username
+        self.keys = keys
+        self.messages = messgages
+
+
 class UserRequest(BaseModel):
     username: str
     keys: {}
@@ -36,6 +43,10 @@ registered_users = {}
 active_user = None
 
 
+def generate_id():
+    pass
+
+
 @app.get("/")
 def root():
     return {"message": "Hello World!"}
@@ -43,8 +54,10 @@ def root():
 
 # USER STUFF
 @app.post("/v1/create-user")
-def create_user(user: UserRequest):
-    registered_users.append(user.username)
+def create_user(user_req: UserRequest):
+    id = generate_id()
+    registered_users[id] = User(
+            user_req.username, user_req.keys, user_req.messages)
 
 
 @app.post("/v1/login")
@@ -70,10 +83,6 @@ def generate_key(message: MessageRequest):
 def fetch_key(message_req: MessageRequest):
     user = registered_users[message_req.user_id]
     return user.keys[message_req.message_id]
-
-
-def generate_id():
-    pass
 
 
 # TODO: decide what classical encryption we want to use here
