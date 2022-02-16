@@ -14,19 +14,23 @@ from qiskit import Aer, assemble
     - Encryption happens classically on the client side
 """
 
-class User(BaseModel):
+
+class UserRequest(BaseModel):
     username: str
+    keys: {}
+    messages: {}
 
 
-class Message(BaseModel):
-    body: str
-    sender: str
-    receiver: str
-    id: int
+class MessageRequest(BaseModel):
+    username: str
+    user_id: str
+    receiver_id: str
+    message_body: str
+    message_id: int
 
 
 app = FastAPI()
-registered_users = []
+registered_users = {}
 # active_users = []
 # for the sake of simplicity we will only have one active user
 active_user = None
@@ -39,18 +43,18 @@ def root():
 
 # USER STUFF
 @app.post("/v1/create-user")
-def create_user(user: User):
+def create_user(user: UserRequest):
     registered_users.append(user.username)
 
 
 @app.post("/v1/login")
-def login(user: User):
+def login(user: UserRequest):
     global active_user
     active_user = user.username
 
 
 @app.post("/v1/logout")
-def logout(user: User):
+def logout(user: UserRequest):
     global active_user
     if user.username in active_user:
         active_user = None
@@ -58,10 +62,36 @@ def logout(user: User):
 
 # QUANTUM KEY GENERATION THINGS
 @app.post("/v1/qc/generate-key")
-def generate_key(message: Message):
+def generate_key(message: MessageRequest):
     pass
 
 
-@app.post("/v1/qc/fetch-key")
-def fetch_key(message: Message):
+@app.post("/v1/fetch-key")
+def fetch_key(message_req: MessageRequest):
+    user = registered_users[message_req.user_id]
+    return user.keys[message_req.message_id]
+
+
+def generate_id():
     pass
+
+
+# TODO: decide what classical encryption we want to use here
+# possibly use libsodium to handle it?
+def encode_message(user_id, message):
+    user = registered_users[user_id]
+    key = generate_key(message)
+    id = generate_id()
+    user.keys[id] = key
+    # TODO: this is where encryption logic should be
+    encrypted_message = message
+    user.messages[id] = encrypted_message
+
+
+def decode_message(user_id, message_id):
+    user = registered_users[user_id]
+    key = user.keys[message_id]
+    encrypted_message = user.messages[message_id]
+    # TODO: decryption logic goes here
+    decrypted_message = encrypted_message
+    return decrypted_message
