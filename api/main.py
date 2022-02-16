@@ -15,6 +15,11 @@ from qiskit import Aer, assemble
 """
 
 
+class UserData:
+    def __init__(self):
+        keys = {}  # {message ID: key}
+        messages = {}  # {message ID: content}
+
 class UserRequest(BaseModel):
     username: str
     keys: {}
@@ -30,7 +35,7 @@ class MessageRequest(BaseModel):
 
 
 app = FastAPI()
-registered_users = {}
+registered_users = {}  # keys: user ID; values: UserData object
 # active_users = []
 # for the sake of simplicity we will only have one active user
 active_user = None
@@ -44,7 +49,7 @@ def root():
 # USER STUFF
 @app.post("/v1/create-user")
 def create_user(user: UserRequest):
-    registered_users.append(user.username)
+    registered_users[user.username] = UserData()
 
 
 @app.post("/v1/login")
