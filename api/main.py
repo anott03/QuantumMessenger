@@ -16,7 +16,8 @@ from qiskit import Aer, assemble
 
 
 class UserData:
-    def __init__(self):
+    def __init__(self, username):
+        name = username
         keys = {}  # {message ID: key}
         messages = {}  # {message ID: content}
 
@@ -41,6 +42,11 @@ registered_users = {}  # keys: user ID; values: UserData object
 active_user = None
 
 
+def generate_id():
+    # TODO use UUID library to do this
+    pass
+
+
 @app.get("/")
 def root():
     return {"message": "Hello World!"}
@@ -49,7 +55,7 @@ def root():
 # USER STUFF
 @app.post("/v1/create-user")
 def create_user(user: UserRequest):
-    registered_users[user.username] = UserData()
+    registered_users[generate_id()] = UserData(user.username)
 
 
 @app.post("/v1/login")
@@ -75,10 +81,6 @@ def generate_key(message: MessageRequest):
 def fetch_key(message_req: MessageRequest):
     user = registered_users[message_req.user_id]
     return user.keys[message_req.message_id]
-
-
-def generate_id():
-    pass
 
 
 # TODO: decide what classical encryption we want to use here
