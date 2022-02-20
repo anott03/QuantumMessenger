@@ -7,7 +7,7 @@ mkdir tmp && cd tmp
 cp ../../src/* .
 cp ../* .
 
-pytest
+pytest $1
 
 cd -
 rm -rf "$(git rev-parse --show-toplevel)/api/test/tmp"
