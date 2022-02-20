@@ -17,17 +17,17 @@ def test_get_random_numbers_quantum():
 def test_encode_qubits():
     bases = get_random_numbers_quantum(5)
     bits = get_random_numbers_quantum(5)
-    encodedBits = encode_qubits(bits, bases)
-    print(encodedBits)
+    encoded_bits = encode_qubits(bits, bases)
+    print(encoded_bits)
     test_result("encode_qubits", "PASS")
 
 
 def test_measure_qubits():
     bits = get_random_numbers_quantum(10)
     bases = get_random_numbers_quantum(10)
-    encodedBits = encode_qubits(bits, bases)
-    decodedBits = measure_qubits(encodedBits, bases)
-    assert encodedBits == decodedBits
+    encoded_bits = encode_qubits(bits, bases)
+    decoded_bits = measure_qubits(encoded_bits, bases)
+    assert encoded_bits == decoded_bits
     test_result("measure_qubits", "PASS")
 
 
