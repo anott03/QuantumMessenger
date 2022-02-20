@@ -1,0 +1,4 @@
+pytest
+fastapi
+qiskit
+pydantic

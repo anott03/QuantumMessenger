@@ -1,6 +1,10 @@
 version: "3.9"
 services:
   api:
-    build: ./api
+    context: ./api
+    target: run
     ports:
       - "8888:8888"
+  api_test:
+    context: ./api
+    target: test
