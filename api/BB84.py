@@ -15,7 +15,7 @@ def get_random_numbers_quantum(n: int) -> list:
 
 
 def encode_qubits(bits: list, bases: list):
-    encodedBits = []
+    encoded_bits = []
     # choose random basis (x or z)
     # 0 --> Z basis
     # 1 --> X basis
@@ -28,8 +28,8 @@ def encode_qubits(bits: list, bases: list):
             qc.x(0)
         if base == 1:  # X basis
             qc.h(0)
-        encodedBits.append(qc)
-    return encodedBits
+        encoded_bits.append(qc)
+    return encoded_bits
 
 
 def measure_qubits(bits: list, bases: list):
@@ -55,10 +55,10 @@ def prune_invalid(bases1, bases2, bits):
     return valid_bits
 
 
-def sample_bits(bits: list, sampleIndices: list):
+def sample_bits(bits: list, sample_indices: list):
     # "Publicly" compare a subset of final key to ensure that the protocol worked
     sampled = []
-    for i in sampleIndices:
+    for i in sample_indices:
         # Have to calculate i modulo length of bits since we are changing the list length as we go, so we don't access indices out of range
         # We pop the element each time so it gets removed from the bits, since any bits they publicly share should not be part of their final secret key
         sampled.append(bits.pop(mod(i, len(bits))))
@@ -67,15 +67,15 @@ def sample_bits(bits: list, sampleIndices: list):
 
 # --- Implementing the Protocol ---
 def bb84(keyLen: int):
-    initialBits = get_random_numbers_quantum(keyLen)
+    initial_bits = get_random_numbers_quantum(keyLen)
     bases1 = get_random_numbers_quantum(keyLen)
-    encoded = encode_qubits(initialBits, bases1)
+    encoded = encode_qubits(initial_bits, bases1)
     # * transmit to other person *
     bases2 = get_random_numbers_quantum(keyLen)
     decoded = measure_qubits(encoded, bases2)
-    pruned1 = prune_invalid(bases1, bases2, initialBits)
+    pruned1 = prune_invalid(bases1, bases2, initial_bits)
     pruned2 = prune_invalid(bases1, bases2, decoded)
-    sampleIndices = sample(range(len(initialBits)), keyLen//5)
+    sampleIndices = sample(range(len(initial_bits)), keyLen//5)
     sampled1 = sample_bits(pruned1, sampleIndices)
     sampled2 = sample_bits(pruned2, sampleIndices)
     if sampled1 == sampled2:
@@ -83,5 +83,3 @@ def bb84(keyLen: int):
         return "".join([str(x) for x in decoded])
     else:
         print("Sample mismatch...")
-
-

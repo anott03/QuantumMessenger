@@ -17,9 +17,10 @@ from qiskit import Aer, assemble
 
 class UserData:
     def __init__(self, username):
-        name = username
-        keys = {}  # {message ID: key}
-        messages = {}  # {message ID: content}
+        self.name = username
+        self.keys = {}  # {message ID: key}
+        self.messages = {}  # {message ID: content}
+
 
 class UserRequest(BaseModel):
     username: str
