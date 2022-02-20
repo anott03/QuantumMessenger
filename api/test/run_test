@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# get where we need to go
+cd "$(git rev-parse --show-toplevel)/api/test/"
+
+mkdir tmp && cd tmp
+cp ../../src/* .
+cp ../* .
+
+pytest
+
+cd -
+rm -rf "$(git rev-parse --show-toplevel)/api/test/tmp"
