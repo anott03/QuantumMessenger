@@ -83,7 +83,7 @@ class BB84:
         bases1 = QuantumUtils.get_random_numbers(keyLen, self.sim)
         encoded = self.encode_qubits(initial_bits, bases1)
         # * transmit to other person *
-        bases2 = QuantumUtils.get_random_numbers(keyLen)
+        bases2 = QuantumUtils.get_random_numbers(keyLen, self.sim)
         decoded = self.measure_qubits(encoded, bases2)
         pruned1 = QuantumUtils.prune_invalid(bases1, bases2, initial_bits)
         pruned2 = QuantumUtils.prune_invalid(bases1, bases2, decoded)

@@ -4,6 +4,7 @@
 cd "$(git rev-parse --show-toplevel)/api/test/"
 
 mkdir tmp && cd tmp
+
 cp ../../src/* .
 cp ../* .
 
