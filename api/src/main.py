@@ -1,15 +1,17 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from qiskit import QuantumCircuit
-from qiskit import Aer, assemble
+import uuid
+from BB84 import BB84
 
 
 """
 --- API Flow ---
 - Client requests key generation for a specific user and message
 - Portion of quantum computer allocated to that user runs BB84 protocol
-    - Quantum teleportation to send qubits to the portion allocated to the receiver
-- Keys are stored classically in a user-specific dictionary after the protocol is run & measured
+    - Quantum teleportation to send qubits to the portion allocated to the
+      receiver
+- Keys are stored classically in a user-specific dictionary after the protocol
+  is run & measured
 - Client can retrieve keys for a specific message id after they are generated
     - Encryption happens classically on the client side
 """
@@ -40,12 +42,19 @@ app = FastAPI()
 registered_users = {}  # keys: user ID; values: UserData object
 # active_users = []
 # for the sake of simplicity we will only have one active user
+# we would ultimately need to make instances of the API for every active user
+# which would entail bundling all functionality into a class and creating
+# an instance of that class for each user so that an API endpoint looks
+# something like:
+# @app.get("/")
+# def root(user: UserRequest):
+#   active_user[username].api.root()
 active_user = None
+bb84 = BB84()
 
 
-def generate_id():
-    # TODO use UUID library to do this
-    pass
+def generate_id() -> str:
+    return str(uuid.uuid4())
 
 
 @app.get("/")
@@ -82,24 +91,3 @@ def generate_key(message: MessageRequest):
 def fetch_key(message_req: MessageRequest):
     user = registered_users[message_req.user_id]
     return user.keys[message_req.message_id]
-
-
-# TODO: decide what classical encryption we want to use here
-# possibly use libsodium to handle it?
-def encode_message(user_id, message):
-    user = registered_users[user_id]
-    key = generate_key(message)
-    id = generate_id()
-    user.keys[id] = key
-    # TODO: this is where encryption logic should be
-    encrypted_message = message
-    user.messages[id] = encrypted_message
-
-
-def decode_message(user_id, message_id):
-    user = registered_users[user_id]
-    key = user.keys[message_id]
-    encrypted_message = user.messages[message_id]
-    # TODO: decryption logic goes here
-    decrypted_message = encrypted_message
-    return decrypted_message
