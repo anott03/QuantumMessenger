@@ -1,28 +1,9 @@
 from random import sample
-from qiskit import QuantumCircuit
-from qiskit import Aer, assemble
+from qiskit import QuantumCircuit, Aer, assemble, transpile
+from qiskit.providers.aer.library.save_instructions import save_statevector
 from numpy import mod
-
-
-class QuantumUtils:
-    def get_random_numbers(n: int, sim) -> list:
-        qc = QuantumCircuit(1)
-        qc.h(0)
-        qc.measure_all()
-        qobj = assemble(qc, shots=n, memory=True)
-        return [int(item) for item in sim.run(qobj).result().get_memory()]
-
-    # Still deciding whether this should be a part of QuantumUtils or if it
-    # should go in BB84...
-    def prune_invalid(bases1, bases2, bits):
-        # only keep the bits in which bases were the same, so the measurement
-        # is assured to be the same
-        valid_bits = []
-        for base1, base2, bit in zip(bases1, bases2, bits):
-            if base1 == base2:  # bit is only valid if its bases were the same
-                valid_bits.append(bit)
-        return valid_bits
-
+import utils
+from qTeleportation import quantum_teleport
 
 class BB84:
     def __init__(self):
