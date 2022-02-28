@@ -1,6 +1,5 @@
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 
-
 def quantum_teleport(nQubits: int, origin: int, destination: int, aux: int):
     # returns a circuit that teleports one qubit state to another location using a helper qubit
     qr = QuantumRegister(nQubits)

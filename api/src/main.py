@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import uuid
 from BB84 import BB84
+from BB84 import ParallelBB84
 
 
 """
@@ -26,8 +27,6 @@ class UserData:
 
 class UserRequest(BaseModel):
     username: str
-    keys: {}
-    messages: {}
 
 
 class MessageRequest(BaseModel):
@@ -50,7 +49,8 @@ registered_users = {}  # keys: user ID; values: UserData object
 # def root(user: UserRequest):
 #   active_user[username].api.root()
 active_user = None
-bb84 = BB84()
+bb84 = ParallelBB84(5)
+qcState = None
 
 
 def generate_id() -> str:
@@ -65,8 +65,9 @@ def root():
 # USER STUFF
 @app.post("/v1/create-user")
 def create_user(user: UserRequest):
-    registered_users[generate_id()] = UserData(user.username)
-
+    userID = generate_id()
+    registered_users[userID] = UserData(user.username)
+    return {"id": userID}
 
 @app.post("/v1/login")
 def login(user: UserRequest):
