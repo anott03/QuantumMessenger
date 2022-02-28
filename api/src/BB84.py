@@ -87,3 +87,48 @@ class BB84:
             return "".join([str(x) for x in decoded])
         else:
             print("Sample mismatch...")
+            return None
+
+
+class ParallelBB84:
+    def __init__(self, key_len):
+        self.sim = Aer.get_backend("aer_simulator")
+        self.key_len = key_len
+        self.masterQC = QuantumCircuit(2 * key_len + 1, key_len + 2)
+
+    # Returns a quantum circuit with N quantum registers
+    def encode_qubits(self, bits: list, bases: list):
+        qc = QuantumCircuit(len(bits))
+        # choose random basis
+        # 0 --> Z basis
+        # 1 --> X basis
+        # encode a qubit into superposition of chosen basis
+        i = 0
+        for bit, base in zip(bits, bases):
+            if bit == 1:
+                qc.x(i)
+            if base == 1:  # X basis
+                qc.h(i)
+            i += 1
+        # qc.save_statevector()
+        # return self.sim.run(transpile(qc, self.sim)).result().get_statevector()
+        return qc
+
+    # Returns a quantum circuit with N quantum registers and N classical registers
+    def measure_qubits(self, bases: list):
+        qc = QuantumCircuit(len(bases), len(bases))
+        i = 0
+        for i, base in enumerate(bases):
+            if base == 0:  # Z basis measurement
+                qc.measure(i, i)
+            else:  # X basis measurement
+                # "rotate" the basis again, since raw measurement can only be
+                # done in Z
+                qc.h(i)
+                qc.measure(i, i)
+            i += 1
+        # Only want one try to mirror real-world situation
+        # qobj = assemble(qc, shots=1, memory=True)
+        # Run the circuit and fetch the measured bit from the classical register
+        # return self.sim.run(qobj).result().get_memory()
+        return qc
