@@ -114,6 +114,14 @@ class ParallelBB84:
         # return self.sim.run(transpile(qc, self.sim)).result().get_statevector()
         return qc
 
+    # Returns a quantum circuit with 2N+1 quantum registers and 2 classical registers
+    def bulk_teleport(self, fromQs: list, toQs: list):
+        nQubits = 2*len(fromQs)+1
+        qc = QuantumCircuit(nQubits, 2)
+        for fromQ, toQ in zip(fromQs, toQs):
+            qc.compose(quantum_teleport(nQubits, fromQ, toQ, nQubits-1), qubits=list(range(nQubits)), clbits=[0, 1], inplace=True, wrap=True)
+        return qc
+
     # Returns a quantum circuit with N quantum registers and N classical registers
     def measure_qubits(self, bases: list):
         qc = QuantumCircuit(len(bases), len(bases))
@@ -132,3 +140,16 @@ class ParallelBB84:
         # Run the circuit and fetch the measured bit from the classical register
         # return self.sim.run(qobj).result().get_memory()
         return qc
+
+    def senderProtocol(self):
+        self.masterQC.compose(self.encode_qubits(utils.get_random_numbers(self.key_len, self.sim), utils.get_random_numbers(self.key_len, self.sim)), qubits=list(range(self.key_len)), inplace=True, wrap=True)
+        self.masterQC.compose(self.bulk_teleport(list(range(self.key_len)), list(range(self.key_len, 2*self.key_len))), qubits=list(range(2*self.key_len+1)), clbits=[self.key_len, self.key_len+1], inplace=True, wrap=True)
+        self.masterQC.save_statevector()
+        return self.sim.run(transpile(self.masterQC, self.sim)).result().get_statevector()
+
+    def receiverProtocol(self, state):
+        self.masterQC = QuantumCircuit(2*self.key_len+1, self.key_len+2)
+        self.masterQC.set_statevector(state)
+        self.masterQC.compose(self.measure_qubits(utils.get_random_numbers(self.key_len, self.sim)), qubits=list(range(self.key_len, 2*self.key_len)), clbits=list(range(self.key_len)))
+        qobj = assemble(self.masterQC, shots=1, memory=True)
+        return self.sim.run(qobj).result().get_memory()
