@@ -15,7 +15,7 @@ class BB84:
         # 0 --> Z basis
         # 1 --> X basis
         if not bases:
-            bases = QuantumUtils.get_random_numbers(len(bits))
+            bases = utils.get_random_numbers(len(bits), self.sim)
         # encode a qubit into superposition of chosen basis
         for bit, base in zip(bits, bases):
             qc = QuantumCircuit(1, 1)
@@ -43,7 +43,18 @@ class BB84:
             meas.append(int(self.sim.run(qobj).result().get_memory()[0]))
         return meas
 
-    def sample_bits(self, bits: list, sample_indices: list):
+    @staticmethod
+    def prune_invalid(bases1, bases2, bits):
+        # only keep the bits in which bases were the same, so the measurement
+        # is assured to be the same
+        valid_bits = []
+        for base1, base2, bit in zip(bases1, bases2, bits):
+            if base1 == base2:  # bit is only valid if its bases were the same
+                valid_bits.append(bit)
+        return valid_bits
+
+    @staticmethod
+    def sample_bits(bits: list, sample_indices: list):
         # "Publicly" compare a subset of final key to ensure that the protocol
         # worked
         sampled = []
@@ -58,16 +69,16 @@ class BB84:
 
     # --- Implementing the Protocol ---
     def bb84(self, keyLen: int):
-        initial_bits = QuantumUtils.get_random_numbers(
+        initial_bits = utils.get_random_numbers(
             keyLen, self.sim
         )
-        bases1 = QuantumUtils.get_random_numbers(keyLen, self.sim)
+        bases1 = utils.get_random_numbers(keyLen, self.sim)
         encoded = self.encode_qubits(initial_bits, bases1)
         # * transmit to other person *
-        bases2 = QuantumUtils.get_random_numbers(keyLen, self.sim)
+        bases2 = utils.get_random_numbers(keyLen, self.sim)
         decoded = self.measure_qubits(encoded, bases2)
-        pruned1 = QuantumUtils.prune_invalid(bases1, bases2, initial_bits)
-        pruned2 = QuantumUtils.prune_invalid(bases1, bases2, decoded)
+        pruned1 = self.prune_invalid(bases1, bases2, initial_bits)
+        pruned2 = self.prune_invalid(bases1, bases2, decoded)
         sampleIndices = sample(range(len(initial_bits)), keyLen//5)
         sampled1 = self.sample_bits(pruned1, sampleIndices)
         sampled2 = self.sample_bits(pruned2, sampleIndices)
