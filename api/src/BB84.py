@@ -1,28 +1,9 @@
 from random import sample
-from qiskit import QuantumCircuit
-from qiskit import Aer, assemble
+from qiskit import QuantumCircuit, Aer, assemble, transpile
+from qiskit.providers.aer.library.save_instructions import save_statevector
 from numpy import mod
-
-
-class QuantumUtils:
-    def get_random_numbers(n: int, sim) -> list:
-        qc = QuantumCircuit(1)
-        qc.h(0)
-        qc.measure_all()
-        qobj = assemble(qc, shots=n, memory=True)
-        return [int(item) for item in sim.run(qobj).result().get_memory()]
-
-    # Still deciding whether this should be a part of QuantumUtils or if it
-    # should go in BB84...
-    def prune_invalid(bases1, bases2, bits):
-        # only keep the bits in which bases were the same, so the measurement
-        # is assured to be the same
-        valid_bits = []
-        for base1, base2, bit in zip(bases1, bases2, bits):
-            if base1 == base2:  # bit is only valid if its bases were the same
-                valid_bits.append(bit)
-        return valid_bits
-
+import utils
+from qTeleportation import quantum_teleport
 
 class BB84:
     def __init__(self):
@@ -34,7 +15,7 @@ class BB84:
         # 0 --> Z basis
         # 1 --> X basis
         if not bases:
-            bases = QuantumUtils.get_random_numbers(len(bits))
+            bases = utils.get_random_numbers(len(bits), self.sim)
         # encode a qubit into superposition of chosen basis
         for bit, base in zip(bits, bases):
             qc = QuantumCircuit(1, 1)
@@ -62,7 +43,18 @@ class BB84:
             meas.append(int(self.sim.run(qobj).result().get_memory()[0]))
         return meas
 
-    def sample_bits(self, bits: list, sample_indices: list):
+    @staticmethod
+    def prune_invalid(bases1, bases2, bits):
+        # only keep the bits in which bases were the same, so the measurement
+        # is assured to be the same
+        valid_bits = []
+        for base1, base2, bit in zip(bases1, bases2, bits):
+            if base1 == base2:  # bit is only valid if its bases were the same
+                valid_bits.append(bit)
+        return valid_bits
+
+    @staticmethod
+    def sample_bits(bits: list, sample_indices: list):
         # "Publicly" compare a subset of final key to ensure that the protocol
         # worked
         sampled = []
@@ -77,16 +69,16 @@ class BB84:
 
     # --- Implementing the Protocol ---
     def bb84(self, keyLen: int):
-        initial_bits = QuantumUtils.get_random_numbers(
+        initial_bits = utils.get_random_numbers(
             keyLen, self.sim
         )
-        bases1 = QuantumUtils.get_random_numbers(keyLen, self.sim)
+        bases1 = utils.get_random_numbers(keyLen, self.sim)
         encoded = self.encode_qubits(initial_bits, bases1)
         # * transmit to other person *
-        bases2 = QuantumUtils.get_random_numbers(keyLen, self.sim)
+        bases2 = utils.get_random_numbers(keyLen, self.sim)
         decoded = self.measure_qubits(encoded, bases2)
-        pruned1 = QuantumUtils.prune_invalid(bases1, bases2, initial_bits)
-        pruned2 = QuantumUtils.prune_invalid(bases1, bases2, decoded)
+        pruned1 = self.prune_invalid(bases1, bases2, initial_bits)
+        pruned2 = self.prune_invalid(bases1, bases2, decoded)
         sampleIndices = sample(range(len(initial_bits)), keyLen//5)
         sampled1 = self.sample_bits(pruned1, sampleIndices)
         sampled2 = self.sample_bits(pruned2, sampleIndices)
@@ -95,3 +87,69 @@ class BB84:
             return "".join([str(x) for x in decoded])
         else:
             print("Sample mismatch...")
+            return None
+
+
+class ParallelBB84:
+    def __init__(self, key_len):
+        self.sim = Aer.get_backend("aer_simulator")
+        self.key_len = key_len
+        self.masterQC = QuantumCircuit(2 * key_len + 1, key_len + 2)
+
+    # Returns a quantum circuit with N quantum registers
+    def encode_qubits(self, bits: list, bases: list):
+        qc = QuantumCircuit(len(bits))
+        # choose random basis
+        # 0 --> Z basis
+        # 1 --> X basis
+        # encode a qubit into superposition of chosen basis
+        i = 0
+        for bit, base in zip(bits, bases):
+            if bit == 1:
+                qc.x(i)
+            if base == 1:  # X basis
+                qc.h(i)
+            i += 1
+        # qc.save_statevector()
+        # return self.sim.run(transpile(qc, self.sim)).result().get_statevector()
+        return qc
+
+    # Returns a quantum circuit with 2N+1 quantum registers and 2 classical registers
+    def bulk_teleport(self, fromQs: list, toQs: list):
+        nQubits = 2*len(fromQs)+1
+        qc = QuantumCircuit(nQubits, 2)
+        for fromQ, toQ in zip(fromQs, toQs):
+            qc.compose(quantum_teleport(nQubits, fromQ, toQ, nQubits-1), qubits=list(range(nQubits)), clbits=[0, 1], inplace=True, wrap=True)
+        return qc
+
+    # Returns a quantum circuit with N quantum registers and N classical registers
+    def measure_qubits(self, bases: list):
+        qc = QuantumCircuit(len(bases), len(bases))
+        i = 0
+        for i, base in enumerate(bases):
+            if base == 0:  # Z basis measurement
+                qc.measure(i, i)
+            else:  # X basis measurement
+                # "rotate" the basis again, since raw measurement can only be
+                # done in Z
+                qc.h(i)
+                qc.measure(i, i)
+            i += 1
+        # Only want one try to mirror real-world situation
+        # qobj = assemble(qc, shots=1, memory=True)
+        # Run the circuit and fetch the measured bit from the classical register
+        # return self.sim.run(qobj).result().get_memory()
+        return qc
+
+    def senderProtocol(self):
+        self.masterQC.compose(self.encode_qubits(utils.get_random_numbers(self.key_len, self.sim), utils.get_random_numbers(self.key_len, self.sim)), qubits=list(range(self.key_len)), inplace=True, wrap=True)
+        self.masterQC.compose(self.bulk_teleport(list(range(self.key_len)), list(range(self.key_len, 2*self.key_len))), qubits=list(range(2*self.key_len+1)), clbits=[self.key_len, self.key_len+1], inplace=True, wrap=True)
+        self.masterQC.save_statevector()
+        return self.sim.run(transpile(self.masterQC, self.sim)).result().get_statevector()
+
+    def receiverProtocol(self, state):
+        self.masterQC = QuantumCircuit(2*self.key_len+1, self.key_len+2)
+        self.masterQC.set_statevector(state)
+        self.masterQC.compose(self.measure_qubits(utils.get_random_numbers(self.key_len, self.sim)), qubits=list(range(self.key_len, 2*self.key_len)), clbits=list(range(self.key_len)))
+        qobj = assemble(self.masterQC, shots=1, memory=True)
+        return self.sim.run(qobj).result().get_memory()
