@@ -72,9 +72,6 @@ const Landing = () => {
     height = window.innerHeight-20;
   }
 
-
-  useEffect(() => {
-  }, [])
   return (
     <div className="Landing">
       <Sketch setup={setup} draw={draw} windowResized={windowResized}/>
