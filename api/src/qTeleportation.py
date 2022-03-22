@@ -22,3 +22,14 @@ def quantum_teleport(nQubits: int, origin: int, destination: int, aux: int):
     qc.cx(aux, destination)
     qc.cz(origin, destination)
     return qc
+
+#
+# testQC = QuantumCircuit(5)
+# testQC.rx(0.785, 0)
+# testQC.compose(quantum_teleport(5, 0, 2, 1), qubits=range(5), inplace=True)
+# # testQC.draw(output="mpl", filename="/Users/rohanmalik/teleportTest.png")
+# testQC.save_statevector()
+# sim = AerSimulator()
+# plot_bloch_multivector(sim.run(testQC).result().get_statevector()).show()
+#
+# testQC.draw(output="mpl", filename="/Users/rohanmalik/Desktop/teleportTest.png")
