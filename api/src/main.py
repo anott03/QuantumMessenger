@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import uuid
-from BB84 import BB84
 from BB84 import ParallelBB84
+from collections import defaultdict
 
 
 """
@@ -25,11 +25,18 @@ class UserData:
         self.messages = {}  # {message ID: content}
 
 
+class PendingMessage:
+    def __init__(self, sender, message_id, message_content):
+        self.sender = sender
+        self.message_id = message_id
+        self.message_content = message_content
+
+
 class UserRequest(BaseModel):
     username: str
 
 
-class MessageRequest(BaseModel):
+class MessageSendRequest(BaseModel):
     username: str
     user_id: str
     receiver_id: str
@@ -37,8 +44,13 @@ class MessageRequest(BaseModel):
     message_id: int
 
 
+class MessageFetchRequest(BaseModel):
+    username: str
+    user_id: str
+
+
 app = FastAPI()
-registered_users = {}  # keys: user ID; values: UserData object
+registered_users = {}  # keys: user IDs; values: UserData objects
 # active_users = []
 # for the sake of simplicity we will only have one active user
 # we would ultimately need to make instances of the API for every active user
@@ -50,7 +62,8 @@ registered_users = {}  # keys: user ID; values: UserData object
 #   active_user[username].api.root()
 active_user = None
 bb84 = ParallelBB84(5)
-qcState = None
+qcState = {}  # keys: message IDs; values: statevector objects
+pendingMessages = defaultdict(list[PendingMessage])  # keys: receiver IDs; values: [pending messages]
 
 
 def generate_id() -> str:
@@ -82,13 +95,4 @@ def logout(user: UserRequest):
         active_user = None
 
 
-# QUANTUM KEY GENERATION THINGS
-@app.post("/v1/qc/generate-key")
-def generate_key(message: MessageRequest):
-    pass
 
-
-@app.post("/v1/fetch-key")
-def fetch_key(message_req: MessageRequest):
-    user = registered_users[message_req.user_id]
-    return user.keys[message_req.message_id]
