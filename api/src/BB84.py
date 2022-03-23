@@ -121,36 +121,44 @@ class ParallelBB84:
             i += 1
         return qc
 
-    # Returns a quantum circuit with 2N+1 quantum registers and 2 classical registers
+    # Returns a quantum circuit with 2N+1 quantum registers
     def bulk_teleport(self, fromQs: list, toQs: list):
         nQubits = 2*len(fromQs)+1
-        qc = QuantumCircuit(nQubits, 2)
+        qc = QuantumCircuit(nQubits)
         for fromQ, toQ in zip(fromQs, toQs):
-            qc.compose(quantum_teleport(nQubits, fromQ, toQ, nQubits-1), qubits=list(range(nQubits)), clbits=[0, 1], inplace=True, wrap=True)
+            qc.compose(quantum_teleport(nQubits, fromQ, toQ, nQubits-1), qubits=range(nQubits), inplace=True)
+            qc.reset(10)
         return qc
 
     # Returns a quantum circuit with N quantum registers and N classical registers
     def measure_qubits(self, bases: list):
         qc = QuantumCircuit(len(bases), len(bases))
-        i = 0
         for i, base in enumerate(bases):
             if base == 0:  # Z basis measurement
                 qc.measure(i, i)
             else:  # X basis measurement
-                # "rotate" the basis again, since raw measurement can only be
-                # done in Z
+                # "rotate" the basis again, since raw measurement can only be done in Z
                 qc.h(i)
                 qc.measure(i, i)
-            i += 1
-        # Only want one try to mirror real-world situation
-        # qobj = assemble(qc, shots=1, memory=True)
-        # Run the circuit and fetch the measured bit from the classical register
-        # return self.sim.run(qobj).result().get_memory()
         return qc
 
-    def senderProtocol(self):
-        self.masterQC.compose(self.encode_qubits(utils.get_random_numbers(self.key_len, self.sim), utils.get_random_numbers(self.key_len, self.sim)), qubits=list(range(self.key_len)), inplace=True, wrap=True)
-        self.masterQC.compose(self.bulk_teleport(list(range(self.key_len)), list(range(self.key_len, 2*self.key_len))), qubits=list(range(2*self.key_len+1)), clbits=[self.key_len, self.key_len+1], inplace=True, wrap=True)
+    def sender_protocol(self):
+        self.reset()
+        self.masterQC.compose(
+            self.encode_qubits(
+                utils.get_random_numbers(self.key_len, self.sim),
+                utils.get_random_numbers(self.key_len, self.sim)
+            ),
+            qubits=range(self.key_len), inplace=True
+        )
+
+        self.masterQC.compose(
+            self.bulk_teleport(
+                list(range(self.key_len)),
+                list(range(self.key_len, 2*self.key_len))
+            ),
+            qubits=range(2*self.key_len+1), inplace=True
+        )
         self.masterQC.save_statevector()
         return self.sim.run(transpile(self.masterQC, self.sim)).result().get_statevector()
 
