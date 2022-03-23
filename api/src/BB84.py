@@ -162,9 +162,31 @@ class ParallelBB84:
         self.masterQC.save_statevector()
         return self.sim.run(transpile(self.masterQC, self.sim)).result().get_statevector()
 
-    def receiverProtocol(self, state):
-        self.masterQC = QuantumCircuit(2*self.key_len+1, self.key_len+2)
+    def receiver_protocol(self, state):
+        self.masterQC = QuantumCircuit(2*self.key_len+1, self.key_len)
         self.masterQC.set_statevector(state)
-        self.masterQC.compose(self.measure_qubits(utils.get_random_numbers(self.key_len, self.sim)), qubits=list(range(self.key_len, 2*self.key_len)), clbits=list(range(self.key_len)))
+        bob_bases = utils.get_random_numbers(self.key_len, self.sim)
+        print(f"Bob Bases:   {''.join(list(map(str, bob_bases)))}")
+        self.receiver_bases = bob_bases
+        self.masterQC.compose(
+            self.measure_qubits(bob_bases),
+            qubits=range(self.key_len, 2*self.key_len), clbits=range(self.key_len), inplace=True
+        )
         qobj = assemble(self.masterQC, shots=1, memory=True)
-        return self.sim.run(qobj).result().get_memory()
+        result = self.sim.run(qobj).result().get_memory()[0][::-1]
+        # prune invalid bits: only keep the ones where both measured the same bases
+        key = ""
+        for base_s, base_r, i in zip(self.sender_bases, self.receiver_bases, range(len(result))):
+            if base_s == base_r:
+                key += result[i]
+        return key
+
+
+# testing only
+# for _ in range(5):
+#     parallel_bb84 = ParallelBB84(5)
+#     post_sender_state = parallel_bb84.sender_protocol()
+#     plot_bloch_multivector(post_sender_state).show()
+#     key = parallel_bb84.receiver_protocol(post_sender_state)
+#     print(f"Shared key:  {key}")
+#     print("-------------------")
