@@ -4,6 +4,7 @@ from qiskit.providers.aer.library.save_instructions import save_statevector
 from numpy import mod
 import utils
 from qTeleportation import quantum_teleport
+from qiskit.visualization import plot_bloch_multivector
 
 class BB84:
     def __init__(self):
@@ -94,14 +95,22 @@ class ParallelBB84:
     def __init__(self, key_len):
         self.sim = Aer.get_backend("aer_simulator")
         self.key_len = key_len
-        self.masterQC = QuantumCircuit(2 * key_len + 1, key_len + 2)
+        self.masterQC = QuantumCircuit(2 * key_len + 1, key_len)
+        self.sender_bases = []
+        self.receiver_bases = []
+
+    def reset(self):
+        self.masterQC = QuantumCircuit(2 * self.key_len + 1, self.key_len)
+        self.sender_bases = []
+        self.receiver_bases = []
 
     # Returns a quantum circuit with N quantum registers
     def encode_qubits(self, bits: list, bases: list):
+        print(f"Bits:        {''.join(list(map(str, bits)))}")
+        print(f"Alice Bases: {''.join(list(map(str, bases)))}")
+        self.sender_bases = bases
         qc = QuantumCircuit(len(bits))
-        # choose random basis
-        # 0 --> Z basis
-        # 1 --> X basis
+        # choose random basis (0 --> Z basis, 1 --> X basis)
         # encode a qubit into superposition of chosen basis
         i = 0
         for bit, base in zip(bits, bases):
@@ -110,8 +119,6 @@ class ParallelBB84:
             if base == 1:  # X basis
                 qc.h(i)
             i += 1
-        # qc.save_statevector()
-        # return self.sim.run(transpile(qc, self.sim)).result().get_statevector()
         return qc
 
     # Returns a quantum circuit with 2N+1 quantum registers and 2 classical registers
