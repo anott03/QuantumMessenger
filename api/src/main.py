@@ -62,8 +62,8 @@ registered_users = {}  # keys: user IDs; values: UserData objects
 #   active_user[username].api.root()
 active_user = None
 bb84 = ParallelBB84(5)
-qcState = {}  # keys: message IDs; values: statevector objects
-pendingMessages = defaultdict(list[PendingMessage])  # keys: receiver IDs; values: [pending messages]
+qc_state = {}  # keys: message IDs; values: statevector objects
+pending_messages = defaultdict(list[PendingMessage])  # keys: receiver IDs; values: [pending messages]
 
 
 def generate_id() -> str:
@@ -95,4 +95,26 @@ def logout(user: UserRequest):
         active_user = None
 
 
+# QUANTUM KEY GENERATION AND MESSAGING STUFF
+@app.post("/v1/qc/send-message")
+def send_message(message: MessageSendRequest):
+    if active_user != message.username:
+        # user not logged in
+        return {"err": "Error: user cannot send a message unless they are logged in"}
+    qc_state[message.message_id] = bb84.sender_protocol()
+    # create a pending message entry so the receiver knows that they have to complete the key exchange
+    # when they try to retrieve the message
+    pending_messages[message.receiver_id].append(PendingMessage(message.user_id, message.message_id, message.message_body))
+
+
+@app.post("/v1/fetch-message")
+def fetch_messages(fetch_req: MessageFetchRequest):
+    if active_user != fetch_req.username:
+        # user not logged in
+        return {"err": "Error: user cannot send a message unless they are logged in"}
+    messages = []
+    for pending_message in pending_messages[fetch_req.user_id]:
+        key = bb84.receiver_protocol(qc_state[pending_message.message_id])
+        messages.append({"key": key, "messageContent": pending_message.message_content})
+    return messages
 
