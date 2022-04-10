@@ -153,8 +153,10 @@ class ParallelBB84:
                 qc.measure(i, i)
         return qc
 
+    # Creates and runs a master circuit for the entire "sender" portion of the protocol; returns the resulting state
     def sender_protocol(self):
         self.reset()
+        # Step 1: encode on sender's end
         self.masterQC.compose(
             self.encode_qubits(
                 utils.get_random_numbers(self.key_len, self.sim),
@@ -163,6 +165,7 @@ class ParallelBB84:
             qubits=range(self.key_len), inplace=True
         )
 
+        # Step 2: teleport to receiver
         self.masterQC.compose(
             self.bulk_teleport(
                 list(range(self.key_len)),
@@ -173,7 +176,9 @@ class ParallelBB84:
         self.masterQC.save_statevector()
         return self.sim.run(transpile(self.masterQC, self.sim)).result().get_statevector()
 
+    # Creates and runs a master circuit for the entire "receiver" portion of the protocol; returns the measured key
     def receiver_protocol(self, state):
+        # Restore the state from the sender portion (workaround to substitute for actual transmission of quantum info)
         self.masterQC = QuantumCircuit(2*self.key_len+1, self.key_len)
         self.masterQC.set_statevector(state)
         bob_bases = utils.get_random_numbers(self.key_len, self.sim)
@@ -183,21 +188,13 @@ class ParallelBB84:
             self.measure_qubits(bob_bases),
             qubits=range(self.key_len, 2*self.key_len), clbits=range(self.key_len), inplace=True
         )
-        qobj = assemble(self.masterQC, shots=1, memory=True)
+        qobj = assemble(self.masterQC, shots=1, memory=True)  # only run once and store results
         result = self.sim.run(qobj).result().get_memory()[0][::-1]
-        # prune invalid bits: only keep the ones where both measured the same bases
+
+        # Step 4: prune invalid bits
+        # (only keep the bits where both measured in the same basis; otherwise the results are not guaranteed to agree)
         key = ""
         for base_s, base_r, i in zip(self.sender_bases, self.receiver_bases, range(len(result))):
             if base_s == base_r:
                 key += result[i]
         return key
-
-
-# testing only
-# for _ in range(5):
-#     parallel_bb84 = ParallelBB84(5)
-#     post_sender_state = parallel_bb84.sender_protocol()
-#     plot_bloch_multivector(post_sender_state).show()
-#     key = parallel_bb84.receiver_protocol(post_sender_state)
-#     print(f"Shared key:  {key}")
-#     print("-------------------")
