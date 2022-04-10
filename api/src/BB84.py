@@ -91,6 +91,10 @@ class BB84:
             return None
 
 
+'''
+Implementation of the BB84 protocol that runs both users' routines on the same quantum computer instead of using
+separate quantum circuits for each qubit, as would happen in "real life"
+'''
 class ParallelBB84:
     def __init__(self, key_len):
         self.sim = Aer.get_backend("aer_simulator")
@@ -99,12 +103,16 @@ class ParallelBB84:
         self.sender_bases = []
         self.receiver_bases = []
 
+    # reset all qubits, including teleportation auxiliary qubits and measurement bits
+    # prepares the class to run another instance of the protocol
     def reset(self):
         self.masterQC = QuantumCircuit(2 * self.key_len + 1, self.key_len)
         self.sender_bases = []
         self.receiver_bases = []
 
-    # Returns a quantum circuit with N quantum registers
+    # Portion of protocol that encodes a message comprised of classical bits into qubits, then placing each in a
+    # given basis (Z or X) to "secure" the quantum information and eventually catch interceptions
+    # Returns a quantum circuit with `key_len` quantum registers
     def encode_qubits(self, bits: list, bases: list):
         print(f"Bits:        {''.join(list(map(str, bits)))}")
         print(f"Alice Bases: {''.join(list(map(str, bases)))}")
@@ -121,7 +129,9 @@ class ParallelBB84:
             i += 1
         return qc
 
-    # Returns a quantum circuit with 2N+1 quantum registers
+    # Portion of protocol that "transfers" qubits from sender to receiver (real life transportation substituted here
+    # for quantum teleportation); sequentially teleports each of the origin qubits to each of the destinations
+    # Returns a quantum circuit with 2*`key_len`+1 quantum registers
     def bulk_teleport(self, fromQs: list, toQs: list):
         nQubits = 2*len(fromQs)+1
         qc = QuantumCircuit(nQubits)
@@ -130,7 +140,8 @@ class ParallelBB84:
             qc.reset(10)
         return qc
 
-    # Returns a quantum circuit with N quantum registers and N classical registers
+    # Portion of protocol that measures the sent message with another set of bases, translating back into classical info
+    # Returns a quantum circuit with `key_len` quantum registers and `key_len` classical registers
     def measure_qubits(self, bases: list):
         qc = QuantumCircuit(len(bases), len(bases))
         for i, base in enumerate(bases):
