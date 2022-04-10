@@ -51,15 +51,6 @@ class MessageFetchRequest(BaseModel):
 
 app = FastAPI()
 registered_users = {}  # keys: user IDs; values: UserData objects
-# active_users = []
-# for the sake of simplicity we will only have one active user
-# we would ultimately need to make instances of the API for every active user
-# which would entail bundling all functionality into a class and creating
-# an instance of that class for each user so that an API endpoint looks
-# something like:
-# @app.get("/")
-# def root(user: UserRequest):
-#   active_user[username].api.root()
 active_user = None
 bb84 = ParallelBB84(5)
 qc_state = {}  # keys: message IDs; values: statevector objects
