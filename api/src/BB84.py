@@ -142,15 +142,14 @@ class ParallelBB84:
     # Portion of protocol that measures the sent message with another set of bases, translating back into classical info
     # Returns a quantum circuit with `key_len` quantum registers and `key_len` classical registers
     def measure_qubits(self, bases: list):
-        qc = QuantumCircuit(len(bases), len(bases))
-        for i, base in enumerate(bases):
+        measure_qc = QuantumCircuit(len(bases), len(bases))
+        for qubit_pos, base in enumerate(bases):
             if base == 0:  # Z basis measurement
-                qc.measure(i, i)
+                measure_qc.measure(qubit_pos, qubit_pos)
             else:  # X basis measurement
-                # "rotate" the basis again, since raw measurement can only be done in Z
-                qc.h(i)
-                qc.measure(i, i)
-        return qc
+                measure_qc.h(qubit_pos)
+                measure_qc.measure(qubit_pos, qubit_pos)
+        return measure_qc
 
     # Creates and runs a master circuit for the entire "sender" portion of the protocol; returns the resulting state
     def sender_protocol(self):
@@ -180,11 +179,13 @@ class ParallelBB84:
         # Restore the state from the sender portion (workaround to substitute for actual transmission of quantum info)
         self.masterQC = QuantumCircuit(2*self.key_len+1, self.key_len)
         self.masterQC.set_statevector(state)
-        bob_bases = utils.get_random_numbers(self.key_len, self.sim)
-        print(f"Bob Bases:   {''.join(list(map(str, bob_bases)))}")
-        self.receiver_bases = bob_bases
+
+        # Step 3: generate bases and measure message on receiver's end
+        receiver_bases = utils.get_random_numbers(self.key_len, self.sim)
+        print(f"Bob Bases:   {''.join(list(map(str, receiver_bases)))}")
+        self.receiver_bases = receiver_bases
         self.masterQC.compose(
-            self.measure_qubits(bob_bases),
+            self.measure_qubits(receiver_bases),
             qubits=range(self.key_len, 2*self.key_len), clbits=range(self.key_len), inplace=True
         )
         qobj = assemble(self.masterQC, shots=1, memory=True)  # only run once and store results
