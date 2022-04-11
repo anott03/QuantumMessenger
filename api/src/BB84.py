@@ -117,28 +117,27 @@ class ParallelBB84:
         print(f"Bits:        {''.join(list(map(str, bits)))}")
         print(f"Alice Bases: {''.join(list(map(str, bases)))}")
         self.sender_bases = bases
-        qc = QuantumCircuit(len(bits))
-        # choose random basis (0 --> Z basis, 1 --> X basis)
-        # encode a qubit into superposition of chosen basis
-        i = 0
+        encoder_qc = QuantumCircuit(len(bits))
+        current_qubit = 0
         for bit, base in zip(bits, bases):
             if bit == 1:
-                qc.x(i)
+                encoder_qc.x(current_qubit)
             if base == 1:  # X basis
-                qc.h(i)
-            i += 1
-        return qc
+                encoder_qc.h(current_qubit)
+            current_qubit += 1
+        return encoder_qc
 
     # Portion of protocol that "transfers" qubits from sender to receiver (real life transportation substituted here
     # for quantum teleportation); sequentially teleports each of the origin qubits to each of the destinations
     # Returns a quantum circuit with 2*`key_len`+1 quantum registers
     def bulk_teleport(self, fromQs: list, toQs: list):
-        nQubits = 2*len(fromQs)+1
-        qc = QuantumCircuit(nQubits)
+        circuit_span = 2*len(fromQs)+1
+        teleport_qc = QuantumCircuit(circuit_span)
         for fromQ, toQ in zip(fromQs, toQs):
-            qc.compose(quantum_teleport(nQubits, fromQ, toQ, nQubits-1), qubits=range(nQubits), inplace=True)
-            qc.reset(10)
-        return qc
+            # append quantum teleport operation with total qubits, from, to, and auxiliary qubit
+            teleport_qc.compose(quantum_teleport(circuit_span, fromQ, toQ, circuit_span-1), qubits=range(circuit_span), inplace=True)
+            teleport_qc.reset(10)  # reset auxiliary qubit for next teleportation
+        return teleport_qc
 
     # Portion of protocol that measures the sent message with another set of bases, translating back into classical info
     # Returns a quantum circuit with `key_len` quantum registers and `key_len` classical registers
