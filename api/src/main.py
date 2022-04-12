@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uuid
 from BB84 import BB84
@@ -38,6 +39,20 @@ class MessageRequest(BaseModel):
 
 
 app = FastAPI()
+origins = [
+    "http://localhost",
+    "https://localhost",
+    "http://localhost:3000",
+    "https://localhost:3000"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 registered_users = {}  # keys: user ID; values: UserData object
 # active_users = []
 # for the sake of simplicity we will only have one active user
@@ -85,7 +100,7 @@ def logout(user: UserRequest):
 # QUANTUM KEY GENERATION THINGS
 @app.post("/v1/qc/generate-key")
 def generate_key(message: MessageRequest):
-    pass
+    return "hi this is a key"
 
 
 @app.post("/v1/fetch-key")
