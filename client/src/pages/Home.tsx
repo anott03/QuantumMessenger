@@ -1,9 +1,12 @@
 import "./styles/Home.css";
 import { useEffect } from 'react';
 import { useQuantumKeyGen } from '../api/keygen';
+import { useNavigate } from 'react-router-dom';
+import * as forge from 'node-forge';
 
 const Home = () => {
   const keygen = useQuantumKeyGen();
+  let navigate = useNavigate();
 
   useEffect(() => {
     async function x() {
@@ -27,7 +30,7 @@ const Home = () => {
   return (
     <div className="home">
       <div className="header">
-        <p>QuantumMessenger</p>
+        <p onClick={() => navigate("/", { replace: true })}>QuantumMessenger</p>
         <button>Profile</button>
       </div>
 

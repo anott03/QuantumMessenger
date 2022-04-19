@@ -20,6 +20,10 @@
   font-size: 1.5rem;
 }
 
+.header > p:hover {
+  cursor: pointer;
+}
+
 .home__body {
   margin: 0.5rem;
   padding: 0.5rem;
@@ -67,6 +71,9 @@
   border: 1px solid black;
   padding: 5px 10px;
   flex: 0.95;
+
+  font-family: JetBrains Mono;
+  font-size: 15px;
 }
 
 .message-form > button {

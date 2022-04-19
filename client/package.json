@@ -14,13 +14,14 @@
     "@types/react-dom": "^17.0.9",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
+    "node-forge": "^1.3.1",
     "p5": "^1.4.1",
     "path": "^0.12.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-p5": "^1.3.27",
     "react-redux": "^7.2.6",
-    "react-router-dom": "6",
+    "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.0",
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0"
@@ -48,5 +49,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/node-forge": "^1.0.1"
   }
 }
