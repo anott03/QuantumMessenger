@@ -21,8 +21,59 @@
 }
 
 .home__body {
-  margin: 1.5rem;
-  background-color: gray;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  background-color: #d0d0d0;
   height: 100%;
   border-radius: .5rem;
+
+  display: flex;
+  flex-direction: row;
 }
+
+.sidebar {
+  flex: 0.2;
+  /* background-color: red; */
+  margin-right: 0.25rem;
+}
+
+.messages {
+  flex: 0.8;
+  /* background-color: blue; */
+  margin-left: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+
+  border-left: 1px solid black;
+}
+
+.contact {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.selected {
+  background-color: #0088cc;
+}
+
+.message-form {
+  display: flex;
+  flex-direction: row;
+}
+
+.message-form > input {
+  width: 100%;
+  border-radius: 20px;
+  border: 1px solid black;
+  padding: 5px 10px;
+  flex: 0.95;
+}
+
+.message-form > button {
+  background: #d0d0d0;
+  padding: 0;
+  flex: 0.05;
+}
+
