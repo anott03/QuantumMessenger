@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uuid
 from BB84 import ParallelBB84
@@ -8,8 +9,7 @@ from collections import defaultdict
 """
 --- API Flow ---
 - Client requests key generation for a specific user and message
-- Portion of quantum computer allocated to that user runs BB84 protocol
-    - Quantum teleportation to send qubits to the portion allocated to the
+- Portion of quantum computer allocated to that user runs BB84 protocol Quantum teleportation to send qubits to the portion allocated to the
       receiver
 - Keys are stored classically in a user-specific dictionary after the protocol
   is run & measured
@@ -50,7 +50,34 @@ class MessageFetchRequest(BaseModel):
 
 
 app = FastAPI()
+<<<<<<< HEAD
 registered_users = {}  # keys: user IDs; values: UserData objects
+=======
+origins = [
+    "http://localhost",
+    "https://localhost",
+    "http://localhost:3000",
+    "https://localhost:3000"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+registered_users = {}  # keys: user ID; values: UserData object
+# active_users = []
+# for the sake of simplicity we will only have one active user
+# we would ultimately need to make instances of the API for every active user
+# which would entail bundling all functionality into a class and creating
+# an instance of that class for each user so that an API endpoint looks
+# something like:
+# @app.get("/")
+# def root(user: UserRequest):
+#   active_user[username].api.root()
+>>>>>>> 693f4c7 (working on keygen)
 active_user = None
 bb84 = ParallelBB84(5)
 qc_state = {}  # keys: message IDs; values: statevector objects
