@@ -23,7 +23,7 @@
 .home__body {
   margin: 0.5rem;
   padding: 0.5rem;
-  background-color: #d0d0d0;
+  /* background-color: #d0d0d0; */
   height: 100%;
   border-radius: .5rem;
 
@@ -33,13 +33,11 @@
 
 .sidebar {
   flex: 0.2;
-  /* background-color: red; */
   margin-right: 0.25rem;
 }
 
 .messages {
   flex: 0.8;
-  /* background-color: blue; */
   margin-left: 0.25rem;
   display: flex;
   flex-direction: column;
@@ -72,7 +70,7 @@
 }
 
 .message-form > button {
-  background: #d0d0d0;
+  background: #00000000;
   padding: 0;
   flex: 0.05;
 }

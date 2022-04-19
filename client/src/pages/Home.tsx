@@ -1,5 +1,5 @@
 import "./styles/Home.css";
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useQuantumKeyGen } from '../api/keygen';
 
 const Home = () => {
@@ -12,13 +12,24 @@ const Home = () => {
     x().catch(console.error);
   }, [])
 
+  const onFormSubmit = (e: any) => {
+    e.preventDefault();
+
+    async function x() {
+      let message: String = e.target["message-input"].value;
+      const key = await keygen();
+      console.log(message, key);
+    }
+
+    x().catch(console.error);
+  }
+
   return (
     <div className="home">
       <div className="header">
         <p>QuantumMessenger</p>
         <button>Profile</button>
       </div>
-
 
       <div className="home__body">
         <div className="sidebar">
@@ -39,8 +50,8 @@ const Home = () => {
         </div>
 
         <div className="messages">
-          <form className="message-form">
-            <input type="text" placeholder="Enter Message Here"/>
+          <form className="message-form" onSubmit={onFormSubmit}>
+            <input id="message-input" type="text" placeholder="Enter Message Here"/>
             <button type="submit">Send</button>
           </form>
         </div>
