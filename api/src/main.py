@@ -51,8 +51,11 @@ class MessageFetchRequest(BaseModel):
 
 app = FastAPI()
 <<<<<<< HEAD
+<<<<<<< HEAD
 registered_users = {}  # keys: user IDs; values: UserData objects
 =======
+=======
+>>>>>>> 0a507883c63f46e0783297073dd95ab0d47939d6
 origins = [
     "http://localhost",
     "https://localhost",
@@ -135,4 +138,3 @@ def fetch_messages(fetch_req: MessageFetchRequest):
         key = bb84.receiver_protocol(qc_state[pending_message.message_id])
         messages.append({"key": key, "messageContent": pending_message.message_content})
     return messages
-
