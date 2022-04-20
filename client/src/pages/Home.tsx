@@ -10,7 +10,7 @@ const Home = () => {
 
   useEffect(() => {
     async function x() {
-      console.log(await keygen());
+      // console.log(await keygen());
     }
     x().catch(console.error);
   }, [])
@@ -20,7 +20,13 @@ const Home = () => {
 
     async function x() {
       let message: String = e.target["message-input"].value;
-      const key = await keygen();
+      const key = await keygen(message);
+
+      // do encryption here
+      // xor with key
+
+      // send-message with encrypted thingie
+
       console.log(message, key);
     }
 
