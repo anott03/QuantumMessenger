@@ -109,5 +109,28 @@ def logout(user: UserRequest):
 #         messages.append({"key": key, "messageContent": pending_message.message_content})
 #     return messages
 
+
+# ---- Revised API Structure and Function ----
+
+class Message:
+    def __init__(self, sender, receiver, message_id, content, timestamp):
+        self.sender = sender
+        self.receiver = receiver
+        self.message_id = message_id
+        self.content = content
+        self.timestamp = timestamp
+
+
+def sort_timestamps(messages):
+    # TODO implement this based on time scheme from client
     return messages
 
+
+keys = {}  # maps message IDs to associated keys
+inboxes = defaultdict(list[Message])
+
+class KeyGenRequest(BaseModel):
+    message_id: str
+
+class KeyFetchRequest(BaseModel):
+    message_id: str
