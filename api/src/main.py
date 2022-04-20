@@ -50,12 +50,7 @@ class MessageFetchRequest(BaseModel):
 
 
 app = FastAPI()
-<<<<<<< HEAD
-<<<<<<< HEAD
 registered_users = {}  # keys: user IDs; values: UserData objects
-=======
-=======
->>>>>>> 0a507883c63f46e0783297073dd95ab0d47939d6
 origins = [
     "http://localhost",
     "https://localhost",
@@ -70,17 +65,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-registered_users = {}  # keys: user ID; values: UserData object
-# active_users = []
-# for the sake of simplicity we will only have one active user
-# we would ultimately need to make instances of the API for every active user
-# which would entail bundling all functionality into a class and creating
-# an instance of that class for each user so that an API endpoint looks
-# something like:
-# @app.get("/")
-# def root(user: UserRequest):
-#   active_user[username].api.root()
->>>>>>> 693f4c7 (working on keygen)
 active_user = None
 bb84 = ParallelBB84(5)
 qc_state = {}  # keys: message IDs; values: statevector objects
@@ -132,7 +116,7 @@ def send_message(message: MessageSendRequest):
 def fetch_messages(fetch_req: MessageFetchRequest):
     if active_user != fetch_req.username:
         # user not logged in
-        return {"err": "Error: user cannot send a message unless they are logged in"}
+        return {"err": "Error: teeheeeeee"}
     messages = []
     for pending_message in pending_messages[fetch_req.user_id]:
         key = bb84.receiver_protocol(qc_state[pending_message.message_id])
