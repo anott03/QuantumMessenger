@@ -153,3 +153,22 @@ def generate_key(key_gen_req: KeyGenRequest):
     return {"key": key}
 
 
+@app.post("/v1/fetch-key")
+def fetch_key(key_fetch_req: KeyFetchRequest):
+    return {"key": keys[key_fetch_req.message_id]}
+
+
+@app.post("/v1/send-message")
+def send_message(send_req: SendMessageRequest):
+    inboxes[send_req.receiver_id].append(Message(
+        send_req.sender_id, send_req.receiver_id, send_req.message_id, send_req.message_content, send_req.timestamp
+    ))
+
+
+@app.post("/v1/fetch-messages")
+def fetch_messages(fetch_req: FetchMessageRequest):
+    target_messages = sort_timestamps([fetch_req.receiver_id])
+    return [{"message_id": message.message_id,
+             "sender": message.sender,
+             "content": message.content} for message in target_messages]
+
