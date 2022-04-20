@@ -134,3 +134,22 @@ class KeyGenRequest(BaseModel):
 
 class KeyFetchRequest(BaseModel):
     message_id: str
+
+class SendMessageRequest(BaseModel):
+    sender_id: str
+    receiver_id: str
+    message_id: str
+    message_content: str
+    timestamp: str
+
+class FetchMessageRequest(BaseModel):
+    receiver_id: str
+
+@app.post("/v1/generate-key")
+def generate_key(key_gen_req: KeyGenRequest):
+    qc_state[key_gen_req.message_id] = bb84.sender_protocol()
+    key = bb84.receiver_protocol(qc_state[key_gen_req.message_id])
+    keys[key_gen_req.message_id] = key
+    return {"key": key}
+
+
