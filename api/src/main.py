@@ -101,24 +101,87 @@ def logout(user: UserRequest):
 
 
 # QUANTUM KEY GENERATION AND MESSAGING STUFF
-@app.post("/v1/qc/send-message")
-def send_message(message: MessageSendRequest):
-    if active_user != message.username:
-        # user not logged in
-        return {"err": "Error: user cannot send a message unless they are logged in"}
-    qc_state[message.message_id] = bb84.sender_protocol()
-    # create a pending message entry so the receiver knows that they have to complete the key exchange
-    # when they try to retrieve the message
-    pending_messages[message.receiver_id].append(PendingMessage(message.user_id, message.message_id, message.message_body))
+# @app.post("/v1/qc/send-message")
+# def send_message(message: MessageSendRequest):
+#     if active_user != message.username:
+#         # user not logged in
+#         return {"err": "Error: user cannot send a message unless they are logged in"}
+#     qc_state[message.message_id] = bb84.sender_protocol()
+#     # create a pending message entry so the receiver knows that they have to complete the key exchange
+#     # when they try to retrieve the message
+#     pending_messages[message.receiver_id].append(PendingMessage(message.user_id, message.message_id, message.message_body))
+#
+#
+# @app.post("/v1/fetch-message")
+# def fetch_messages(fetch_req: MessageFetchRequest):
+#     if active_user != fetch_req.username:
+#         # user not logged in
+#         return {"err": "Error: user cannot send a message unless they are logged in"}
+#     messages = []
+#     for pending_message in pending_messages[fetch_req.user_id]:
+#         key = bb84.receiver_protocol(qc_state[pending_message.message_id])
+#         messages.append({"key": key, "messageContent": pending_message.message_content})
+#     return messages
 
 
-@app.post("/v1/fetch-message")
-def fetch_messages(fetch_req: MessageFetchRequest):
-    if active_user != fetch_req.username:
-        # user not logged in
-        return {"err": "Error: teeheeeeee"}
-    messages = []
-    for pending_message in pending_messages[fetch_req.user_id]:
-        key = bb84.receiver_protocol(qc_state[pending_message.message_id])
-        messages.append({"key": key, "messageContent": pending_message.message_content})
+# ---- Revised API Structure and Function ----
+
+class Message:
+    def __init__(self, sender, receiver, message_id, content, timestamp):
+        self.sender = sender
+        self.receiver = receiver
+        self.message_id = message_id
+        self.content = content
+        self.timestamp = timestamp
+
+
+def sort_timestamps(messages):
+    # TODO implement this based on time scheme from client
     return messages
+
+
+keys = {}  # maps message IDs to associated keys
+inboxes = defaultdict(list[Message])
+
+class KeyGenRequest(BaseModel):
+    message_id: str
+
+class KeyFetchRequest(BaseModel):
+    message_id: str
+
+class SendMessageRequest(BaseModel):
+    sender_id: str
+    receiver_id: str
+    message_id: str
+    message_content: str
+    timestamp: str
+
+class FetchMessageRequest(BaseModel):
+    receiver_id: str
+
+@app.post("/v1/generate-key")
+def generate_key(key_gen_req: KeyGenRequest):
+    qc_state[key_gen_req.message_id] = bb84.sender_protocol()
+    key = bb84.receiver_protocol(qc_state[key_gen_req.message_id])
+    keys[key_gen_req.message_id] = key
+    return {"key": key}
+
+
+@app.post("/v1/fetch-key")
+def fetch_key(key_fetch_req: KeyFetchRequest):
+    return {"key": keys[key_fetch_req.message_id]}
+
+
+@app.post("/v1/send-message")
+def send_message(send_req: SendMessageRequest):
+    inboxes[send_req.receiver_id].append(Message(
+        send_req.sender_id, send_req.receiver_id, send_req.message_id, send_req.message_content, send_req.timestamp
+    ))
+
+
+@app.post("/v1/fetch-messages")
+def fetch_messages(fetch_req: FetchMessageRequest):
+    target_messages = sort_timestamps([fetch_req.receiver_id])
+    return [{"message_id": message.message_id,
+             "sender": message.sender,
+             "content": message.content} for message in target_messages]
