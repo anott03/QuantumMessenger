@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uuid
 from BB84 import ParallelBB84
@@ -8,8 +9,7 @@ from collections import defaultdict
 """
 --- API Flow ---
 - Client requests key generation for a specific user and message
-- Portion of quantum computer allocated to that user runs BB84 protocol
-    - Quantum teleportation to send qubits to the portion allocated to the
+- Portion of quantum computer allocated to that user runs BB84 protocol Quantum teleportation to send qubits to the portion allocated to the
       receiver
 - Keys are stored classically in a user-specific dictionary after the protocol
   is run & measured
@@ -51,6 +51,20 @@ class MessageFetchRequest(BaseModel):
 
 app = FastAPI()
 registered_users = {}  # keys: user IDs; values: UserData objects
+origins = [
+    "http://localhost",
+    "https://localhost",
+    "http://localhost:3000",
+    "https://localhost:3000"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 active_user = None
 bb84 = ParallelBB84(5)
 qc_state = {}  # keys: message IDs; values: statevector objects
@@ -171,4 +185,3 @@ def fetch_messages(fetch_req: FetchMessageRequest):
     return [{"message_id": message.message_id,
              "sender": message.sender,
              "content": message.content} for message in target_messages]
-
