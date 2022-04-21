@@ -8,13 +8,6 @@ const Home = () => {
   const keygen = useQuantumKeyGen();
   let navigate = useNavigate();
 
-  useEffect(() => {
-    async function x() {
-      // console.log(await keygen());
-    }
-    x().catch(console.error);
-  }, [])
-
   const onFormSubmit = (e: any) => {
     e.preventDefault();
 
