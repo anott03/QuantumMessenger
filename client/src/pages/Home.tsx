@@ -14,11 +14,21 @@ const Home = () => {
     async function x() {
       let message: String = e.target["message-input"].value;
       const key = await keygen(message);
-
-      // do encryption here
-      // xor with key
-
-      // send-message with encrypted thingie
+      const keyStr = "01011"  // temp, for testing
+      let messageBytes = ""
+      for (let i = 0; i < message.length; i++) {
+        messageBytes += message.charCodeAt(i).toString(2).padStart(7, "0")
+      }
+      let xorBytes = ""
+      let keyPointer = 0
+      for (let i = 0; i < messageBytes.length; i++) {
+        let messageBit = Number.parseInt(messageBytes[i])
+        let keyBit = Number.parseInt(keyStr[keyPointer])
+        xorBytes += messageBit === keyBit ? "0" : "1"
+        keyPointer += 1
+        keyPointer %= keyStr.length
+      }
+      // xorBytes now contains an encrypted message
 
       console.log(message, key);
     }
