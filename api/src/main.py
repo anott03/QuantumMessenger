@@ -112,19 +112,19 @@ def root():
 
 
 # USER STUFF
-@app.post("/v1/create-user")
+@app.post("/v1/create-user", tags=["create-user"])
 def create_user(user: UserRequest):
     userID = generate_id()
     registered_users[userID] = UserData(user.username)
     return {"id": userID}
 
-@app.post("/v1/login")
+@app.post("/v1/login", tags=["login"])
 def login(user: UserRequest):
     global active_user
     active_user = user.username
 
 
-@app.post("/v1/logout")
+@app.post("/v1/logout", tags=["logout"])
 def logout(user: UserRequest):
     global active_user
     if user.username in active_user:
@@ -190,7 +190,7 @@ class SendMessageRequest(BaseModel):
 class FetchMessageRequest(BaseModel):
     receiver_id: str
 
-@app.post("/v1/generate-key")
+@app.post("/v1/generate-key", tags=["generate-key"])
 def generate_key(key_gen_req: KeyGenRequest):
     qc_state[key_gen_req.message_id] = bb84.sender_protocol()
     key = bb84.receiver_protocol(qc_state[key_gen_req.message_id])
@@ -198,19 +198,19 @@ def generate_key(key_gen_req: KeyGenRequest):
     return {"key": key}
 
 
-@app.post("/v1/fetch-key")
+@app.post("/v1/fetch-key", tags=["fetch-key"])
 def fetch_key(key_fetch_req: KeyFetchRequest):
     return {"key": keys[key_fetch_req.message_id]}
 
 
-@app.post("/v1/send-message")
+@app.post("/v1/send-message", tags=["send-message"])
 def send_message(send_req: SendMessageRequest):
     inboxes[send_req.receiver_id].append(Message(
         send_req.sender_id, send_req.receiver_id, send_req.message_id, send_req.message_content, send_req.timestamp
     ))
 
 
-@app.post("/v1/fetch-messages")
+@app.post("/v1/fetch-messages", tags=["fetch-message"])
 def fetch_messages(fetch_req: FetchMessageRequest):
     target_messages = sort_timestamps([fetch_req.receiver_id])
     return [{"message_id": message.message_id,
