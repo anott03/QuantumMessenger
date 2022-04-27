@@ -49,6 +49,37 @@ class MessageFetchRequest(BaseModel):
     user_id: str
 
 
+metadata_tags = [
+    {
+        "name": "create-user",
+        "description": "Creates and registers a user on the app."
+    },
+    {
+        "name": "login",
+        "description": "Signs the user into the app, allowing them to send and receive messages."
+    },
+    {
+        "name": "logout",
+        "description": "Signs the user out of the app."
+    },
+    {
+        "name": "generate-key",
+        "description": "Creates a shared encryption key for a sender and receiver using the BB84 quantum protocol."
+    },
+    {
+        "name": "fetch-key",
+        "description": "Fetches the shared key associated with a given message ID."
+    },
+    {
+        "name": "send-message",
+        "description": "Sends a message to a recipient, end-to-end encrypted with a quantum generated key."
+    },
+    {
+        "name": "fetch-messages",
+        "description": "Fetches all messages sent to a user, encrypted with their respective keys."
+    }
+]
+
 app = FastAPI()
 registered_users = {}  # keys: user IDs; values: UserData objects
 origins = [
