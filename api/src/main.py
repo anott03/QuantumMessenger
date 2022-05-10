@@ -212,7 +212,7 @@ def send_message(send_req: SendMessageRequest):
 
 @app.post("/v1/fetch-messages", tags=["fetch-message"])
 def fetch_messages(fetch_req: FetchMessageRequest):
-    target_messages = sort_timestamps([fetch_req.receiver_id])
+    target_messages = sort_timestamps(inboxes[fetch_req.receiver_id])
     return [{"message_id": message.message_id,
              "sender": message.sender,
              "content": message.content} for message in target_messages]
