@@ -14,6 +14,8 @@ const Home = () => {
   let navigate = useNavigate();
   const sendMessage = useSendMessage();
   const fetchMessages = useFetchMessages();
+  // TODO: actual decryption of messages; right now this just renders fetched data
+  // without a considering the encryption
   const fetchKey = useFetchKey();
   const user = useAppSelector(selectUser);
 
