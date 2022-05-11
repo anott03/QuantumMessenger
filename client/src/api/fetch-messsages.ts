@@ -1,8 +1,9 @@
-import { useAppDispatch } from "../redux/hooks";
-import { setMessages } from "../redux/reducers/userSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { setMessages, selectUser } from "../redux/reducers/userSlice";
 
 function useFetchMessages(): (userId: String) => Promise<void> {
   const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
 
   return async function(userId: String) {
     const URI = "http://localhost:8000/v1/fetch-messages";
@@ -15,7 +16,7 @@ function useFetchMessages(): (userId: String) => Promise<void> {
       },
 
       body: JSON.stringify({
-        username: "test",
+        username: user.username,
         receiver_id: userId,
       })
     }

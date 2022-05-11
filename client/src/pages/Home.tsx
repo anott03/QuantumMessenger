@@ -6,8 +6,9 @@ import { nanoid } from "@reduxjs/toolkit";
 import {useFetchMessages} from "../api/fetch-messsages";
 import {useFetchKey} from "../api/fetch-key";
 import { useEffect, useState } from "react";
-import { useAppSelector } from '../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectUser } from '../redux/reducers/userSlice';
+import { setMessages } from "../redux/reducers/userSlice";
 
 const Home = () => {
   const keygen = useQuantumKeyGen();
@@ -18,6 +19,7 @@ const Home = () => {
   // without a considering the encryption
   const fetchKey = useFetchKey();
   const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch()
 
   // const messageList = async () => {
     // let messages = await fetchMessages(user.username ?? "test")
@@ -79,7 +81,7 @@ const Home = () => {
 
   useEffect( () => {
     console.log("USER", user);
-    fetchMessages(user.username ?? "test");
+    fetchMessages(user.username ?? "test")
     console.log(user.messages);
   }, []);
 
@@ -102,6 +104,7 @@ const Home = () => {
             <input id="message-input" type="text" placeholder="Enter Message Here"/>
             <button type="submit">Send</button>
           </form>
+          <hr/>
           {
             user.messages.map((message: any) => <div key={nanoid()} className="message">
               <p><strong>{message.sender}</strong></p>
