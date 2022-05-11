@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
 
-function useQuantumKeyGen(): (messageId: String) => Promise<Buffer> {
+function useFetchKey(): (messageId: String) => Promise<Buffer> {
   return async function(messageId: String) {
-    const URI = "http://localhost:8000/v1/qc/generate-key";
+    const URI = "http://localhost:8000/v1/qc/fetch-key";
     const opts: RequestInit = {
       method: "POST", 
       mode: 'cors',
@@ -17,7 +17,7 @@ function useQuantumKeyGen(): (messageId: String) => Promise<Buffer> {
     }
 
     let key = await fetch(URI, opts).then(res => res.json()).then(data => {
-      return data;
+      return data["key"];
     }).catch(err => {
       console.error(err);
     })
@@ -26,4 +26,4 @@ function useQuantumKeyGen(): (messageId: String) => Promise<Buffer> {
   }
 }
 
-export { useQuantumKeyGen }
+export { useFetchKey }
