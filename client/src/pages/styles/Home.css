@@ -53,10 +53,11 @@
   border-left: 1px solid #d0d0d0;
 }
 
-.contact {
+.sidebar-item {
   margin-bottom: 1rem;
   padding: 0.5rem;
   border-radius: 0.5rem;
+  text-align: center;
 }
 
 .selected {
@@ -84,5 +85,12 @@
   color: white;
   padding: 0;
   flex: 0.05;
+}
+
+.message {
+  padding: 5px 10px;
+  margin: 5px;
+  border-radius: 10px;
+  background-color: #35757c;
 }
 

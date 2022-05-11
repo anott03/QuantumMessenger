@@ -22,11 +22,14 @@ export const userSlice = createSlice({
     setUser: (state, action: PayloadAction<{userId?: String, username?: String}>) => {
       state.userId = action.payload.userId ?? null;
       state.username = action.payload.username ?? null;
+    },
+    setMessages: (state, action: PayloadAction<String[]>) => {
+      state.messages = action.payload;
     }
   },
 });
 
-export const { setUser } = userSlice.actions;
-export const selectUser = (state: RootState) => state;
+export const { setUser, setMessages } = userSlice.actions;
+export const selectUser = (state: RootState) => state.user;
 
 export default userSlice.reducer;
