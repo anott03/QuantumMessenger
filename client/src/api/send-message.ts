@@ -12,11 +12,11 @@ function useSendMessage(): (messageId: String, message: String) => void {
       },
 
       body: JSON.stringify({
-        username: "test",
         user_id: "test",
         receiver_id: "test2",
         message_id: messageId,
-        message_content: message
+        message_content: message,
+        timestamp: Date.now()
       })
     }
 
