@@ -4,8 +4,8 @@ from pydantic import BaseModel
 import uuid
 from BB84 import ParallelBB84
 from collections import defaultdict
-from pprint import pprint
-
+from datetime import datetime, timezone
+import pytz
 
 """
 --- API Flow ---
@@ -168,8 +168,12 @@ class Message:
 
 
 def sort_timestamps(messages):
-    # TODO implement this based on time scheme from client
-    return messages
+    return list(sorted(messages, key=lambda x: int(x.timestamp), reverse=True))
+
+def formatted_time(ts):
+    formatted = datetime.fromtimestamp(int(ts)/1000, pytz.timezone("US/Eastern")).strftime(f"%-I:%M %p on %b %-d, %Y")
+    print(formatted)
+    return formatted
 
 
 keys = {}  # maps message IDs to associated keys
@@ -209,7 +213,6 @@ def send_message(send_req: SendMessageRequest):
     inboxes[send_req.receiver_id].append(Message(
         send_req.sender_id, send_req.receiver_id, send_req.message_id, send_req.message_content, send_req.timestamp
     ))
-    pprint(inboxes)
 
 
 @app.post("/v1/fetch-messages", tags=["fetch-message"])
@@ -218,7 +221,8 @@ def fetch_messages(fetch_req: FetchMessageRequest):
     return [{"message_id": message.message_id,
              "key": keys[message.message_id],
              "sender": message.sender,
-             "content": message.content} for message in target_messages]
+             "content": message.content,
+             "timestamp": formatted_time(message.timestamp)} for message in target_messages]
     # return [{"message_id": "test id",
     #          "sender": "test sender",
     #          "content": "test content"} for i in range(10)]
