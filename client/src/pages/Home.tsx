@@ -7,7 +7,7 @@ import {useFetchMessages} from "../api/fetch-messsages";
 import {useFetchKey} from "../api/fetch-key";
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
-import { selectUser } from '../redux/reducers/userSlice';
+import { selectUser, setUser } from '../redux/reducers/userSlice';
 import { setMessages } from "../redux/reducers/userSlice";
 
 const Home = () => {
@@ -24,7 +24,7 @@ const Home = () => {
   const onFormSubmit = (e: any) => {
     e.preventDefault();
 
-    async function x(message: String) {
+    async function x(message: String, receiver: String) {
       let messageId = nanoid();
       const key = await keygen(messageId);
       const keyStr = key.toString()  // temp, for testing
@@ -42,29 +42,38 @@ const Home = () => {
         keyPointer %= keyStr.length
       }
       // xorBytes now contains an encrypted message
-      sendMessage(messageId, xorBytes);
+      sendMessage(messageId, xorBytes, receiver);
       console.log(message, key);
 
     }
 
     let _message: String = e.target['message-input'].value;
+    let _receiver: String = e.target['receiver-input'].value;
     //@ts-ignore
     document.getElementById("message-input-form").reset();
 
-    x(_message).catch(console.error);
+    x(_message, _receiver).catch(console.error);
   }
 
   useEffect( () => {
+    if (!user.username) {
+      navigate("/login")
+    }
     console.log("USER", user);
     fetchMessages(user.username ?? "test2")
     console.log(user.messages);
   }, []);
 
+  const logoutClicked = () => {
+    dispatch(setUser({username: undefined}))
+    navigate("/")
+  }
+
   return (
     <div className="home">
       <div className="header">
         <p onClick={() => navigate("/", { replace: true })}>QuantumMessenger</p>
-        <button>Profile</button>
+        <button onClick={logoutClicked}>Logout</button>
       </div>
 
       <div className="home__body">
@@ -76,17 +85,17 @@ const Home = () => {
 
         <div className="messages">
           <form id="message-input-form" className="message-form" onSubmit={onFormSubmit}>
-            <input id="message-input" type="text" placeholder="Enter Message Here"/>
+            <input id="receiver-input" type="text" placeholder="Enter Recipient Here" style={{flexGrow: "1"}}/>
+            <input id="message-input" type="text" placeholder="Enter Message Here" style={{flexGrow: "5", marginLeft: "10px", marginRight: "10px"}}/>
             <button type="submit">Send</button>
           </form>
-          <hr/>
-
-          { /* TODO(@amitav): make a call to fetch-messages instead of reloading the entire page */}
-          <button onClick={() => window.location.reload()}>Refresh</button>
-
+          <br/>
+          <button onClick={() => fetchMessages(user.username ?? "test")} style={{width: "20%", alignSelf: "center"}}>Refresh</button>
+          <br/>
+          <hr style={{marginBottom: "10px"}}/>
           {
             user.messages.map((message: any) => <div key={nanoid()} className="message">
-              <p><strong>{message.sender}</strong></p>
+              <p><strong>{message.sender}</strong> at {message.timestamp}</p>
               <p>{message.content}</p>
             </div>)
           }
