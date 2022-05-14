@@ -4,7 +4,7 @@ import type { RootState } from '../store';
 interface UserState {
   userId: String | null,
   username: String | null,
-  messages: String[],
+  messages: {message_id?: String, sender?: String, content?: String}[],
   keys: String[]
 }
 
@@ -23,7 +23,7 @@ export const userSlice = createSlice({
       state.userId = action.payload.userId ?? null;
       state.username = action.payload.username ?? null;
     },
-    setMessages: (state, action: PayloadAction<String[]>) => {
+    setMessages: (state, action: PayloadAction<{message_id?: String, sender?: String, content?: String}[]>) => {
       state.messages = action.payload;
     }
   },

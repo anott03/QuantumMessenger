@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
 
-function useFetchKey(): (messageId: String) => Promise<Buffer> {
+function useFetchKey(): (messageId: String) => Promise<String> {
   return async function(messageId: String) {
-    const URI = "http://localhost:8000/v1/qc/fetch-key";
+    const URI = "http://localhost:8000/v1/fetch-key";
     const opts: RequestInit = {
       method: "POST", 
       mode: 'cors',
@@ -17,12 +17,13 @@ function useFetchKey(): (messageId: String) => Promise<Buffer> {
     }
 
     let key = await fetch(URI, opts).then(res => res.json()).then(data => {
+      console.log("fetch key", data)
       return data["key"];
     }).catch(err => {
       console.error(err);
     })
 
-    return Buffer.alloc(key.length, key);
+    return key["key"];
   }
 }
 
