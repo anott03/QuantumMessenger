@@ -19,7 +19,7 @@ function useFetchMessages(): (userId: String) => Promise<void> {
 
       body: JSON.stringify({
         username: user.username,
-        receiver_id: userId,
+        receiver_id: user.username,
       })
     }
 
@@ -49,7 +49,7 @@ function useFetchMessages(): (userId: String) => Promise<void> {
           reconstructed += String.fromCharCode(Number.parseInt(chunk, 2))
         }
         // @ts-ignore
-        let newMessage = {message_id: message["message_id"], sender: message["sender"], content: reconstructed}
+        let newMessage = {message_id: message["message_id"], sender: message["sender"], content: reconstructed, timestamp: message["timestamp"]}
         newData.push(newMessage)
       }
       // @ts-ignore

@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import './styles/Landing.css';
 import Sketch from "react-p5";
+import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
   // let [width, setWidth] = useState(window.innerWidth - 20);
   // let [height, setHeight] = useState(window.innerHeight - 20);
   let width = window.innerWidth - 20;
   let height = window.innerHeight - 20;
+  let navigate = useNavigate()
 
   let particles: Particle[] = [];
   class Particle {
@@ -79,7 +81,7 @@ const Landing = () => {
       <div className="title-card">
         <h1>Quantum Messenger</h1>
         <p> A messaging application that uses quantum computers for end-to-end encryption!</p>
-        <button>Get Started!</button>
+        <button onClick={() => navigate("/home")}>Get Started!</button>
       </div>
     </div>
   );
