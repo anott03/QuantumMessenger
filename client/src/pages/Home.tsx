@@ -21,40 +21,10 @@ const Home = () => {
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch()
 
-  // const messageList = async () => {
-    // let messages = await fetchMessages(user.username ?? "test")
-    // let reconstructeds = []
-    // for (const message in messages) {
-
-      // // @ts-ignore
-      // let keyStr = fetchKey(message["message_id"]).toString()
-
-      // // @ts-ignore
-      // let content = message["content"]
-      // let decryptedBytes = ""
-      // let keyPointer = 0
-      // for (let i = 0; i < content.length; i++) {
-        // let messageBit = Number.parseInt(content[i])
-        // let keyBit = Number.parseInt(keyStr[keyPointer])
-        // decryptedBytes += messageBit === keyBit ? "0" : "1"
-        // keyPointer += 1
-        // keyPointer %= keyStr.length
-      // }
-      // let reconstructed = ""
-      // for (let i = 0; i < decryptedBytes.length; i+=7) {
-        // let chunk = decryptedBytes.slice(i, i+7)
-        // reconstructed += String.fromCharCode(Number.parseInt(chunk, 2))
-      // }
-      // reconstructeds.push(reconstructed)
-    // }
-    // return reconstructeds
-  // }
-
   const onFormSubmit = (e: any) => {
     e.preventDefault();
 
-    async function x() {
-      let message: String = e.target["message-input"].value;
+    async function x(message: String) {
       let messageId = nanoid();
       const key = await keygen(messageId);
       const keyStr = key.toString()  // temp, for testing
@@ -74,14 +44,19 @@ const Home = () => {
       // xorBytes now contains an encrypted message
       sendMessage(messageId, xorBytes);
       console.log(message, key);
+
     }
 
-    x().catch(console.error);
+    let _message: String = e.target['message-input'].value;
+    //@ts-ignore
+    document.getElementById("message-input-form").reset();
+
+    x(_message).catch(console.error);
   }
 
   useEffect( () => {
     console.log("USER", user);
-    fetchMessages(user.username ?? "test")
+    fetchMessages(user.username ?? "test2")
     console.log(user.messages);
   }, []);
 
@@ -100,11 +75,15 @@ const Home = () => {
         </div>
 
         <div className="messages">
-          <form className="message-form" onSubmit={onFormSubmit}>
+          <form id="message-input-form" className="message-form" onSubmit={onFormSubmit}>
             <input id="message-input" type="text" placeholder="Enter Message Here"/>
             <button type="submit">Send</button>
           </form>
           <hr/>
+
+          { /* TODO(@amitav): make a call to fetch-messages instead of reloading the entire page */}
+          <button onClick={() => window.location.reload()}>Refresh</button>
+
           {
             user.messages.map((message: any) => <div key={nanoid()} className="message">
               <p><strong>{message.sender}</strong></p>
