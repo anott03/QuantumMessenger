@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import uuid
 from BB84 import ParallelBB84
 from collections import defaultdict
+from pprint import pprint
 
 
 """
@@ -99,7 +100,7 @@ app.add_middleware(
 active_user = None
 bb84 = ParallelBB84(5)
 qc_state = {}  # keys: message IDs; values: statevector objects
-pending_messages = defaultdict(list[PendingMessage])  # keys: receiver IDs; values: [pending messages]
+pending_messages = defaultdict(list)  # keys: receiver IDs; values: [pending messages]
 
 
 def generate_id() -> str:
@@ -172,7 +173,7 @@ def sort_timestamps(messages):
 
 
 keys = {}  # maps message IDs to associated keys
-inboxes = defaultdict(list[Message])
+inboxes = defaultdict(list)
 
 class KeyGenRequest(BaseModel):
     message_id: str
@@ -208,14 +209,16 @@ def send_message(send_req: SendMessageRequest):
     inboxes[send_req.receiver_id].append(Message(
         send_req.sender_id, send_req.receiver_id, send_req.message_id, send_req.message_content, send_req.timestamp
     ))
+    pprint(inboxes)
 
 
 @app.post("/v1/fetch-messages", tags=["fetch-message"])
 def fetch_messages(fetch_req: FetchMessageRequest):
     target_messages = sort_timestamps(inboxes[fetch_req.receiver_id])
-    #  return [{"message_id": message.message_id,
-             #  "sender": message.sender,
-             #  "content": message.content} for message in target_messages]
-    return [{"message_id": "test id",
-             "sender": "test sender",
-             "content": "test content"} for i in range(10)]
+    return [{"message_id": message.message_id,
+             "key": keys[message.message_id],
+             "sender": message.sender,
+             "content": message.content} for message in target_messages]
+    # return [{"message_id": "test id",
+    #          "sender": "test sender",
+    #          "content": "test content"} for i in range(10)]
