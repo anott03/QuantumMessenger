@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 
 function useQuantumKeyGen(): (messageId: String) => Promise<String> {
   return async function(messageId: String) {
-    const URI = "http://localhost:8000/v1/generate-key";
+    const URI = `${process.env.REACT_APP_API_ROOT}generate-key`;
     const opts: RequestInit = {
       method: "POST", 
       mode: 'cors',

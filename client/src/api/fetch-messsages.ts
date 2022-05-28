@@ -8,7 +8,7 @@ function useFetchMessages(): (userId: String) => Promise<void> {
   const fetchKey = useFetchKey()
 
   return async function(userId: String) {
-    const URI = "http://localhost:8000/v1/fetch-messages";
+    const URI = `${process.env.REACT_APP_API_ROOT}fetch-messages`;
     const opts: RequestInit = {
       method: "POST", 
       mode: 'cors',

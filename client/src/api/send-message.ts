@@ -5,7 +5,7 @@ import { selectUser } from "../redux/reducers/userSlice";
 function useSendMessage(): (messageId: String, message: String, receiver: String) => void {
   const user = useAppSelector(selectUser)
   return async function(messageId: String, message: String, receiver: String) {
-    const URI = "http://localhost:8000/v1/send-message";
+    const URI = `{process.env.REACT_APP_API_ROOT}send-message`;
     const opts: RequestInit = {
       method: "POST", 
       mode: 'cors',
