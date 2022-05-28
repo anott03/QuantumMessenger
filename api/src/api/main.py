@@ -78,6 +78,10 @@ metadata_tags = [
     {
         "name": "fetch-messages",
         "description": "Fetches all messages sent to a user, encrypted with their respective keys."
+    },
+    {
+        "name": "interacting-users",
+        "description": "Returns a list of all users who have interacted (sent or received messages) with the given user."
     }
 ]
 
@@ -195,6 +199,9 @@ class SendMessageRequest(BaseModel):
 class FetchMessageRequest(BaseModel):
     receiver_id: str
 
+class InteractingUserRequest(BaseModel):
+    username: str
+
 @app.post("/v1/generate-key", tags=["generate-key"])
 def generate_key(key_gen_req: KeyGenRequest):
     qc_state[key_gen_req.message_id] = bb84.sender_protocol()
@@ -226,3 +233,18 @@ def fetch_messages(fetch_req: FetchMessageRequest):
     # return [{"message_id": "test id",
     #          "sender": "test sender",
     #          "content": "test content"} for i in range(10)]
+
+@app.post("/v1/interacting-users", tags=["interacting-users"])
+def interacting_users(user_req: InteractingUserRequest):
+    all_msgs = []  # each item is [msg object, sender, receiver]
+    for user, inbox in inboxes.items():
+        for msg in inbox:
+            all_msgs.append([msg, msg.sender, user])
+    interacting_msgs = []  # each item is [msg object, other user]
+    for info in all_msgs:
+        if info[1] == user_req.username:
+            interacting_msgs.append([info[0], info[2]])
+        elif info[2] == user_req.username:
+            interacting_msgs.append([info[0], info[1]])
+    interacting_msgs = list(sorted(interacting_msgs, key=lambda x: int(x[0].timestamp), reverse=True))
+    return {"users": [item[0] for item in interacting_msgs]}
