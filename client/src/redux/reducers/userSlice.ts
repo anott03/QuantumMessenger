@@ -6,7 +6,8 @@ interface UserState {
   username: String | null,
   displayName: String | null,
   messages: {message_id?: String, sender?: String, content?: String, timestamp?: String}[],
-  keys: String[]
+  keys: String[],
+  interactingUsers: String[]
 }
 
 const initialState: UserState = {
@@ -15,6 +16,7 @@ const initialState: UserState = {
   displayName: null,
   messages: [],
   keys: [],
+  interactingUsers: []
 }
 
 export const userSlice = createSlice({
@@ -28,11 +30,14 @@ export const userSlice = createSlice({
     },
     setMessages: (state, action: PayloadAction<{message_id?: String, sender?: String, content?: String, timestamp?: String}[]>) => {
       state.messages = action.payload;
+    },
+    setInteractingUsers: (state, action: PayloadAction<String[]>) => {
+      state.interactingUsers = action.payload;
     }
   },
 });
 
-export const { setUser, setMessages } = userSlice.actions;
+export const { setUser, setMessages, setInteractingUsers } = userSlice.actions;
 export const selectUser = (state: RootState) => state.user;
 
 export default userSlice.reducer;
