@@ -20,32 +20,25 @@ metadata_tags = [
     {
         "name": "create-user",
         "description": "Creates and registers a user on the app."
-    },
-    {
+    }, {
         "name": "login",
         "description": "Signs the user into the app, allowing them to send and receive messages."
-    },
-    {
+    }, {
         "name": "logout",
         "description": "Signs the user out of the app."
-    },
-    {
+    }, {
         "name": "generate-key",
         "description": "Creates a shared encryption key for a sender and receiver using the BB84 quantum protocol."
-    },
-    {
+    }, {
         "name": "fetch-key",
         "description": "Fetches the shared key associated with a given message ID."
-    },
-    {
+    }, {
         "name": "send-message",
         "description": "Sends a message to a recipient, end-to-end encrypted with a quantum generated key."
-    },
-    {
+    }, {
         "name": "fetch-messages",
         "description": "Fetches all messages sent to a user, encrypted with their respective keys."
-    },
-    {
+    }, {
         "name": "interacting-users",
         "description": "Returns a list of all users who have interacted (sent or received messages) with the given user."
     }
@@ -70,11 +63,6 @@ app.add_middleware(
 active_user = None
 bb84 = ParallelBB84(5)
 qc_state = {}  # keys: message IDs; values: statevector objects
-pending_messages = defaultdict(list)  # keys: receiver IDs; values: [pending messages]
-
-
-def generate_id() -> str:
-    return str(uuid.uuid4())
 
 
 @app.get("/")
@@ -82,10 +70,36 @@ def root():
     return {"message": "Hello World!"}
 
 
-# USER STUFF
+# === USER MANAGEMENT ===
+class UserData:
+    def __init__(self, username):
+        self.name = username
+        self.keys = {}  # {message ID: key}
+        self.messages = {}  # {message ID: content}
+
+
+# -- request models --
+class UserRequest(BaseModel):
+    username: str
+
+
+class MessageSendRequest(BaseModel):
+    username: str
+    user_id: str
+    receiver_id: str
+    message_body: str
+    message_id: int
+
+
+class MessageFetchRequest(BaseModel):
+    username: str
+    user_id: str
+
+
+# -- user management endpoints --
 @app.post("/v1/create-user", tags=["create-user"])
 def create_user(user: UserRequest):
-    userID = generate_id()
+    userID = str(uuid.uuid4())
     registered_users[userID] = UserData(user.username)
     return {"id": userID}
 
@@ -101,32 +115,6 @@ def logout(user: UserRequest):
     if user.username in active_user:
         active_user = None
 
-
-# QUANTUM KEY GENERATION AND MESSAGING STUFF
-# @app.post("/v1/qc/send-message")
-# def send_message(message: MessageSendRequest):
-#     if active_user != message.username:
-#         # user not logged in
-#         return {"err": "Error: user cannot send a message unless they are logged in"}
-#     qc_state[message.message_id] = bb84.sender_protocol()
-#     # create a pending message entry so the receiver knows that they have to complete the key exchange
-#     # when they try to retrieve the message
-#     pending_messages[message.receiver_id].append(PendingMessage(message.user_id, message.message_id, message.message_body))
-#
-#
-# @app.post("/v1/fetch-message")
-# def fetch_messages(fetch_req: MessageFetchRequest):
-#     if active_user != fetch_req.username:
-#         # user not logged in
-#         return {"err": "Error: user cannot send a message unless they are logged in"}
-#     messages = []
-#     for pending_message in pending_messages[fetch_req.user_id]:
-#         key = bb84.receiver_protocol(qc_state[pending_message.message_id])
-#         messages.append({"key": key, "messageContent": pending_message.message_content})
-#     return messages
-
-
-# ---- Revised API Structure and Function ----
 
 class Message:
     def __init__(self, sender, receiver, message_id, content, timestamp):
