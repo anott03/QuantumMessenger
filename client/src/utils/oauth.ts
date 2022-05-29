@@ -19,7 +19,7 @@ function useOAuth(): () => void {
         console.log(user)
         dispatch(setUser({
           email: user.email,
-          username: user.displayName
+          displayName: user.displayName,
         }));
         navigate("/home");
       })

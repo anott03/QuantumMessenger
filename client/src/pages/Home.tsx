@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectUser, setUser } from '../redux/reducers/userSlice';
 import { setMessages } from "../redux/reducers/userSlice";
+import { signOut, getAuth } from 'firebase/auth';
 
 const Home = () => {
   const keygen = useQuantumKeyGen();
@@ -56,16 +57,22 @@ const Home = () => {
   }
 
   useEffect( () => {
-    if (!user.username) {
+    if (!user.email) {
       navigate("/")
     }
     console.log("USER", user);
-    fetchMessages(user.username ?? "test2")
+    fetchMessages(user.email ?? "test2")
     console.log(user.messages);
   }, []);
 
   const logoutClicked = () => {
-    dispatch(setUser({username: undefined}))
+    const auth = getAuth();
+    signOut(auth).then(function() {
+      dispatch(setUser({
+        displayName: undefined,
+        email: undefined
+      }))
+    });
     navigate("/")
   }
 
@@ -73,7 +80,10 @@ const Home = () => {
     <div className="home">
       <div className="header">
         <p onClick={() => navigate("/", { replace: true })}>QuantumMessenger</p>
-        <button onClick={logoutClicked}>Logout</button>
+        <div>
+          <p>{user.email}</p>
+          <button onClick={logoutClicked}>Logout</button>
+        </div>
       </div>
 
       <div className="home__body">
@@ -90,7 +100,7 @@ const Home = () => {
             <button type="submit">Send</button>
           </form>
           <br/>
-          <button onClick={() => fetchMessages(user.username ?? "test")} style={{width: "20%", alignSelf: "center"}}>Refresh</button>
+          <button onClick={() => fetchMessages(user.email ?? "")} style={{width: "20%", alignSelf: "center"}}>Refresh</button>
           <br/>
           <hr style={{marginBottom: "10px"}}/>
           {
