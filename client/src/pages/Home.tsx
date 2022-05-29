@@ -57,7 +57,7 @@ const Home = () => {
 
   useEffect( () => {
     if (!user.username) {
-      navigate("/login")
+      navigate("/")
     }
     console.log("USER", user);
     fetchMessages(user.username ?? "test2")
