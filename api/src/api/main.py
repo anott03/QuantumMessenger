@@ -8,48 +8,14 @@ from datetime import datetime, timezone
 import pytz
 
 """
---- API Flow ---
-- Client requests key generation for a specific user and message
-- Portion of quantum computer allocated to that user runs BB84 protocol Quantum teleportation to send qubits to the portion allocated to the
-      receiver
-- Keys are stored classically in a user-specific dictionary after the protocol
-  is run & measured
-- Client can retrieve keys for a specific message id after they are generated
-    - Encryption happens classically on the client side
+--- QuantumMessenger API ---
+Backend for QuantumMessenger that handles all of the following:
+-> User management: registration, login, and logout
+-> Quantum key generation: creating and fetching keys tied to messages
+-> Messaging: sending messages and fetching a user's inbox
 """
 
-
-class UserData:
-    def __init__(self, username):
-        self.name = username
-        self.keys = {}  # {message ID: key}
-        self.messages = {}  # {message ID: content}
-
-
-class PendingMessage:
-    def __init__(self, sender, message_id, message_content):
-        self.sender = sender
-        self.message_id = message_id
-        self.message_content = message_content
-
-
-class UserRequest(BaseModel):
-    username: str
-
-
-class MessageSendRequest(BaseModel):
-    username: str
-    user_id: str
-    receiver_id: str
-    message_body: str
-    message_id: int
-
-
-class MessageFetchRequest(BaseModel):
-    username: str
-    user_id: str
-
-
+# === APP SETUP AND GLOBAL STATE ===
 metadata_tags = [
     {
         "name": "create-user",
