@@ -201,4 +201,5 @@ def interacting_users(user_req: InteractingUserRequest):
         elif info[2] == user_req.username:
             interacting_msgs.append([info[0], info[1]])
     interacting_msgs = list(sorted(interacting_msgs, key=lambda x: int(x[0].timestamp), reverse=True))
-    return {"users": [item[0] for item in interacting_msgs]}
+    users = [item[1] for item in interacting_msgs]
+    return {"users": list(dict.fromkeys(users))}
