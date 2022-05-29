@@ -60,6 +60,7 @@
   display: flex;
   flex-direction: column;
   padding: 0.5rem;
+  padding-top: 0;
 
   border-left: 1px solid #d0d0d0;
 }
@@ -69,6 +70,10 @@
   padding: 0.5rem;
   border-radius: 0.5rem;
   text-align: center;
+}
+
+.sidebar-item:hover {
+  cursor: pointer;
 }
 
 .selected {
@@ -105,3 +110,14 @@
   background-color: #35757c;
 }
 
+.buttons {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
+}
+
+.buttons > button {
+  min-width: 0;
+  flex: 0.5;
+  margin: 1px;
+}

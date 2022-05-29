@@ -61,13 +61,12 @@ const Home = () => {
     }
   }
 
-  useEffect( () => {
+  useEffect(() => {
     if (!user.email) {
       navigate("/")
     }
-    console.log("USER", user);
     fetchMessages(user.email ?? "test2")
-    console.log(user.messages);
+    interactingUsers(user.email ?? "")
   }, []);
 
   const logoutClicked = () => {
@@ -102,10 +101,11 @@ const Home = () => {
 
       <div className="home__body">
         <div className="sidebar">
-          <h2 className="sidebar-item">Messages</h2>
-          <hr/><br/><br/>
-          <div className={focusedUser === "New Message" ? "sidebar-item selected" : "sidebar-item"} onClick={() => setFocusedUser("New Message")}>
-            <h3 >New Message</h3>
+          {/*<h2 className="sidebar-item">Messages</h2> */}
+          {/* <hr/><br/><br/> */}
+          <div className="buttons">
+            <button className="new-message-button" onClick={() => setFocusedUser("New Message")}>New Message</button>
+            <button onClick={() => refresh()} style={{width: "20%", alignSelf: "center"}}>Refresh</button>
           </div>
           {
             user.interactingUsers.map((user: any) => <div key={nanoid()} className={user === focusedUser ? "sidebar-item selected" : "sidebar-item"} onClick={() => setFocusedUser(user)}>
@@ -115,21 +115,17 @@ const Home = () => {
         </div>
 
         <div className="messages">
-          <form id="message-input-form" className="message-form" onSubmit={onFormSubmit}>
+          {/* <form id="message-input-form" className="message-form" onSubmit={onFormSubmit}>
             { focusedUser === "New Message" && <input id="receiver-input" type="text" placeholder="Enter Recipient Here" style={{flexGrow: "1"}}/> }
             <input id="message-input" type="text" placeholder="Enter Message Here" style={{flexGrow: "5", marginLeft: "10px", marginRight: "10px"}}/>
             <button type="submit">Send</button>
-          </form>
-          <br/>
-          <button onClick={() => refresh()} style={{width: "20%", alignSelf: "center"}}>Refresh</button>
-          <br/>
-          <hr style={{marginBottom: "10px"}}/>
+          </form> */}
           { filteredMessages().length !== 0 ? (
             filteredMessages().map((message: any) => <div key={nanoid()} className="message">
               <p><strong>{message.sender}</strong> at {message.timestamp}</p>
               <p>{message.content}</p>
             </div>)
-            ) : (<h3 style={{textAlign: "center", marginTop: "2rem"}}>You haven't received any messages from this user yet.</h3>)
+            ) : (<h3 style={{textAlign: "center", marginTop: "2rem"}}>No User Selected</h3>)
           }
         </div>
       </div>

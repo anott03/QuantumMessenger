@@ -7,11 +7,6 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
     "@testing-library/user-event": "^13.2.1",
-    "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.13",
-    "@types/p5": "^1.4.1",
-    "@types/react": "^17.0.20",
-    "@types/react-dom": "^17.0.9",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
     "firebase": "^9.8.2",
@@ -52,6 +47,14 @@
     ]
   },
   "devDependencies": {
-    "@types/node-forge": "^1.0.1"
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.13",
+    "@types/node-forge": "^1.0.1",
+    "@types/p5": "^1.4.1",
+    "@types/react": "^17.0.20",
+    "@types/react-dom": "^17.0.9",
+    "autoprefixer": "^10.4.7",
+    "postcss": "^8.4.14",
+    "tailwindcss": "^3.0.24"
   }
 }
