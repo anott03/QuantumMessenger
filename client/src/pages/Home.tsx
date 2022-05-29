@@ -1,37 +1,38 @@
 import "./styles/Home.css";
 import { useQuantumKeyGen } from '../api/keygen';
 import { useNavigate } from 'react-router-dom';
-import {useSendMessage} from "../api/send-message";
+import { useSendMessage } from "../api/send-message";
 import { nanoid } from "@reduxjs/toolkit";
-import {useFetchMessages} from "../api/fetch-messsages";
-import {useFetchKey} from "../api/fetch-key";
+import { useFetchMessages } from "../api/fetch-messsages";
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectUser, setUser } from '../redux/reducers/userSlice';
-import { setMessages } from "../redux/reducers/userSlice";
+import { useInteractingUsers } from "../api/interacting-users";
 
 const Home = () => {
   const keygen = useQuantumKeyGen();
   let navigate = useNavigate();
   const sendMessage = useSendMessage();
   const fetchMessages = useFetchMessages();
-  // TODO: actual decryption of messages; right now this just renders fetched data
-  // without a considering the encryption
-  const fetchKey = useFetchKey();
+  const interactingUsers = useInteractingUsers();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch()
+  const [focusedUser, setFocusedUser] = useState("New Message")
 
   const onFormSubmit = (e: any) => {
     e.preventDefault();
 
-    async function x(message: String, receiver: String) {
+    async function encryptAndSend(message: String, receiver: String) {
+      // create ID for message and generate a key
       let messageId = nanoid();
       const key = await keygen(messageId);
-      const keyStr = key.toString()  // temp, for testing
+      const keyStr = key.toString()
+      // convert message to ASCII bytes
       let messageBytes = ""
       for (let i = 0; i < message.length; i++) {
         messageBytes += message.charCodeAt(i).toString(2).padStart(7, "0")
       }
+      // XOR the message bytes with the key, repeating the key bits as necessary
       let xorBytes = ""
       let keyPointer = 0
       for (let i = 0; i < messageBytes.length; i++) {
@@ -41,32 +42,45 @@ const Home = () => {
         keyPointer += 1
         keyPointer %= keyStr.length
       }
-      // xorBytes now contains an encrypted message
+      // send the encrypted message
       sendMessage(messageId, xorBytes, receiver);
-      console.log(message, key);
-
     }
 
     let _message: String = e.target['message-input'].value;
-    let _receiver: String = e.target['receiver-input'].value;
-    //@ts-ignore
-    document.getElementById("message-input-form").reset();
-
-    x(_message, _receiver).catch(console.error);
+    if (focusedUser === "New Message") {
+      let _receiver: String = e.target['receiver-input'].value;
+      //@ts-ignore
+      document.getElementById("message-input-form").reset();
+      encryptAndSend(_message, _receiver).catch(console.error);
+    } else {
+      //@ts-ignore
+      document.getElementById("message-input-form").reset();
+      encryptAndSend(_message, focusedUser).catch(console.error);
+    }
   }
 
   useEffect( () => {
-    if (!user.username) {
-      navigate("/")
-    }
-    console.log("USER", user);
-    fetchMessages(user.username ?? "test2")
-    console.log(user.messages);
+    // return to landing page if no user is logged in
+    if (!user.username) { navigate("/") }
+    // otherwise, populate user state with relevant info
+    fetchMessages(user.username ?? "")
+    interactingUsers(user.username ?? "")
+    console.log(user.username)
   }, []);
 
   const logoutClicked = () => {
+    // clear the user state and return to landing page
     dispatch(setUser({username: undefined}))
     navigate("/")
+  }
+
+  const filteredMessages = () => {
+    return user.messages.filter(msg => msg.sender === focusedUser)
+  }
+
+  const refresh = () => {
+    fetchMessages(user.username ?? "")
+    interactingUsers(user.username ?? "")
   }
 
   return (
@@ -78,26 +92,34 @@ const Home = () => {
 
       <div className="home__body">
         <div className="sidebar">
-          <div className="sidebar-item selected">
-            <h3>Messages</h3>
+          <h2 className="sidebar-item">Messages</h2>
+          <hr/><br/><br/>
+          <div className={focusedUser === "New Message" ? "sidebar-item selected" : "sidebar-item"} onClick={() => setFocusedUser("New Message")}>
+            <h3 >New Message</h3>
           </div>
+          {
+            user.interactingUsers.map((user: any) => <div key={nanoid()} className={user === focusedUser ? "sidebar-item selected" : "sidebar-item"} onClick={() => setFocusedUser(user)}>
+              <h3>{user}</h3>
+            </div>)
+          }
         </div>
 
         <div className="messages">
           <form id="message-input-form" className="message-form" onSubmit={onFormSubmit}>
-            <input id="receiver-input" type="text" placeholder="Enter Recipient Here" style={{flexGrow: "1"}}/>
+            { focusedUser === "New Message" && <input id="receiver-input" type="text" placeholder="Enter Recipient Here" style={{flexGrow: "1"}}/> }
             <input id="message-input" type="text" placeholder="Enter Message Here" style={{flexGrow: "5", marginLeft: "10px", marginRight: "10px"}}/>
             <button type="submit">Send</button>
           </form>
           <br/>
-          <button onClick={() => fetchMessages(user.username ?? "test")} style={{width: "20%", alignSelf: "center"}}>Refresh</button>
+          <button onClick={() => refresh()} style={{width: "20%", alignSelf: "center"}}>Refresh</button>
           <br/>
           <hr style={{marginBottom: "10px"}}/>
-          {
-            user.messages.map((message: any) => <div key={nanoid()} className="message">
+          { filteredMessages().length !== 0 ? (
+            filteredMessages().map((message: any) => <div key={nanoid()} className="message">
               <p><strong>{message.sender}</strong> at {message.timestamp}</p>
               <p>{message.content}</p>
             </div>)
+            ) : (<h3 style={{textAlign: "center", marginTop: "2rem"}}>You haven't received any messages from this user yet.</h3>)
           }
         </div>
       </div>
