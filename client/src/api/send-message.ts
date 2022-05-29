@@ -15,7 +15,7 @@ function useSendMessage(): (messageId: String, message: String, receiver: String
       },
 
       body: JSON.stringify({
-        sender_id: user.username,
+        sender_id: user.email,
         receiver_id: receiver,
         message_id: messageId,
         message_content: message,

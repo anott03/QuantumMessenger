@@ -86,8 +86,8 @@ const Home = () => {
   }
 
   const refresh = () => {
-    fetchMessages(user.username ?? "")
-    interactingUsers(user.username ?? "")
+    fetchMessages(user.email ?? "")
+    interactingUsers(user.email ?? "")
   }
 
   return (
