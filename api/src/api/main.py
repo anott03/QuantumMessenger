@@ -116,6 +116,7 @@ def logout(user: UserRequest):
         active_user = None
 
 
+# === QUANTUM KEY GENERATION AND MESSAGE MANAGEMENT ===
 class Message:
     def __init__(self, sender, receiver, message_id, content, timestamp):
         self.sender = sender
@@ -124,16 +125,15 @@ class Message:
         self.content = content
         self.timestamp = timestamp
 
-
+# -- helper functions --
 def sort_timestamps(messages):
     return list(sorted(messages, key=lambda x: int(x.timestamp), reverse=True))
 
-def formatted_time(ts):
-    formatted = datetime.fromtimestamp(int(ts)/1000, pytz.timezone("US/Eastern")).strftime(f"%-I:%M %p on %b %-d, %Y")
-    print(formatted)
-    return formatted
+def formatted_time(timestamp):
+    return datetime.fromtimestamp(int(timestamp) / 1000, pytz.timezone("US/Eastern")).strftime(f"%-I:%M %p on %b %-d, %Y")
 
 
+# -- global variables and request models --
 keys = {}  # maps message IDs to associated keys
 inboxes = defaultdict(list)
 
@@ -156,6 +156,7 @@ class FetchMessageRequest(BaseModel):
 class InteractingUserRequest(BaseModel):
     username: str
 
+# -- quantum key generation endpoints --
 @app.post("/v1/generate-key", tags=["generate-key"])
 def generate_key(key_gen_req: KeyGenRequest):
     qc_state[key_gen_req.message_id] = bb84.sender_protocol()
@@ -169,11 +170,12 @@ def fetch_key(key_fetch_req: KeyFetchRequest):
     return {"key": keys[key_fetch_req.message_id]}
 
 
+# -- message management endpoints --
 @app.post("/v1/send-message", tags=["send-message"])
 def send_message(send_req: SendMessageRequest):
-    inboxes[send_req.receiver_id].append(Message(
-        send_req.sender_id, send_req.receiver_id, send_req.message_id, send_req.message_content, send_req.timestamp
-    ))
+    inboxes[send_req.receiver_id].append(
+        Message(send_req.sender_id, send_req.receiver_id, send_req.message_id, send_req.message_content, send_req.timestamp)
+    )
 
 
 @app.post("/v1/fetch-messages", tags=["fetch-message"])
@@ -184,17 +186,15 @@ def fetch_messages(fetch_req: FetchMessageRequest):
              "sender": message.sender,
              "content": message.content,
              "timestamp": formatted_time(message.timestamp)} for message in target_messages]
-    # return [{"message_id": "test id",
-    #          "sender": "test sender",
-    #          "content": "test content"} for i in range(10)]
 
+# -- misc endpoints --
 @app.post("/v1/interacting-users", tags=["interacting-users"])
 def interacting_users(user_req: InteractingUserRequest):
-    all_msgs = []  # each item is [msg object, sender, receiver]
+    all_msgs = []  # stores messages along with their senders and receivers
     for user, inbox in inboxes.items():
         for msg in inbox:
             all_msgs.append([msg, msg.sender, user])
-    interacting_msgs = []  # each item is [msg object, other user]
+    interacting_msgs = []  # stores messages along with the user who interacted with the given user
     for info in all_msgs:
         if info[1] == user_req.username:
             interacting_msgs.append([info[0], info[2]])
