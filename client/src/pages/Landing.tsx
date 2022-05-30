@@ -78,10 +78,10 @@ const Landing = () => {
     <div className="Landing">
       <Sketch setup={setup} draw={draw} windowResized={windowResized}/>
 
-      <div className="title-card">
-        <h1>Quantum Messenger</h1>
+      <div className="title-card font-sans">
+        <h1 className="text-3xl font-bold">Quantum Messenger</h1>
         <p> A messaging application that uses quantum computers for end-to-end encryption!</p>
-        <button onClick={oauth}>Sign in With Github</button>
+        <button className="bg-violet-400 px-3 py-1 rounded-lg text-slate-900" onClick={oauth}>Sign in With Github</button>
       </div>
     </div>
   );

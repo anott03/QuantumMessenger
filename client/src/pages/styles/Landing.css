@@ -24,12 +24,3 @@
 h1 {
   margin: 0;
 } 
-
-button {
-  background-color: #8f8de8;
-  border: 0;
-  border-radius: 5px;
-  font-size: 1rem;
-  padding: 10px 25px 10px 25px;
-  cursor: pointer;
-}

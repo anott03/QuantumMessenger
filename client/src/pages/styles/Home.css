@@ -1,3 +1,7 @@
+* {
+  @apply font-sans
+}
+
 .home {
   width: 100vw;
   height: 100vh;
@@ -9,59 +13,7 @@
   color: white;
 }
 
-.header {
-  padding: 1rem;
-  
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.header > div {
-  display: flex;
-  flex-direction: row;
-
-  p {
-    font-family: "JetBrains Mono";
-    font-weight: 800;
-    font-size: 1.5rem;
-  }
-}
-
-.header > p {
-  font-family: "JetBrains Mono";
-  font-weight: 800;
-  font-size: 1.5rem;
-}
-
-.header > p:hover {
-  cursor: pointer;
-}
-
-.home__body {
-  margin: 0.5rem;
-  padding: 0.5rem;
-  /* background-color: #d0d0d0; */
-  height: 100%;
-  border-radius: .5rem;
-
-  display: flex;
-  flex-direction: row;
-}
-
-.sidebar {
-  flex: 0.2;
-  margin-right: 0.25rem;
-}
-
 .messages {
-  flex: 0.8;
-  margin-left: 0.25rem;
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-  padding-top: 0;
-
   border-left: 1px solid #d0d0d0;
 }
 
@@ -70,38 +22,36 @@
   padding: 0.5rem;
   border-radius: 0.5rem;
   text-align: center;
-}
 
-.sidebar-item:hover {
-  cursor: pointer;
+  @apply cursor-pointer
 }
 
 .selected {
   background-color: #0088cc;
 }
 
-.message-form {
-  display: flex;
-  flex-direction: row;
-}
+/* .message-form { */
+  /* display: flex; */
+  /* flex-direction: row; */
+/* } */
 
-.message-form > input {
-  width: 100%;
-  border-radius: 20px;
-  border: 1px solid black;
-  padding: 5px 10px;
-  flex: 0.95;
+/* .message-form > input { */
+  /* width: 100%; */
+  /* border-radius: 20px; */
+  /* border: 1px solid black; */
+  /* padding: 5px 10px; */
+  /* flex: 0.95; */
 
-  font-family: JetBrains Mono;
-  font-size: 15px;
-}
+  /* font-family: JetBrains Mono; */
+  /* font-size: 15px; */
+/* } */
 
-.message-form > button {
-  background: #00000000;
-  color: white;
-  padding: 0;
-  flex: 0.05;
-}
+/* .message-form > button { */
+  /* background: #00000000; */
+  /* color: white; */
+  /* padding: 0; */
+  /* flex: 0.05; */
+/* } */
 
 .message {
   padding: 5px 10px;
@@ -110,14 +60,7 @@
   background-color: #35757c;
 }
 
-.buttons {
-  margin-bottom: 10px;
-  display: flex;
-  flex-direction: row;
-}
-
 .buttons > button {
-  min-width: 0;
-  flex: 0.5;
   margin: 1px;
+  flex: 0.5;
 }
