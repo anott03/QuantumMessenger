@@ -8,7 +8,7 @@ const Landing = () => {
   // let [height, setHeight] = useState(window.innerHeight - 20);
   let width = window.innerWidth - 20;
   let height = window.innerHeight - 20;
-  const oauth = useOAuth();
+  const { githubOAuth, googleOAuth } = useOAuth();
 
   let particles: Particle[] = [];
   class Particle {
@@ -81,7 +81,10 @@ const Landing = () => {
       <div className="title-card font-sans">
         <h1 className="text-3xl font-bold">Quantum Messenger</h1>
         <p> A messaging application that uses quantum computers for end-to-end encryption!</p>
-        <button className="bg-violet-400 px-3 py-1 rounded-lg text-slate-900" onClick={oauth}>Sign in With Github</button>
+        <div className="flex flex-row">
+          <button className="bg-violet-400 px-3 py-1 rounded-lg text-slate-900 mx-1" onClick={githubOAuth}>Sign in With Github</button>
+          <button className="bg-violet-400 px-3 py-1 rounded-lg text-slate-900 mx-1" onClick={googleOAuth}>Sign in With Google</button>
+        </div>
       </div>
     </div>
   );
