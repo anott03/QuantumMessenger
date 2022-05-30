@@ -3,7 +3,6 @@ import type { RootState } from '../store';
 
 interface UserState {
   email: String | null,
-  username: String | null,
   displayName: String | null,
   messages: {message_id?: String, sender?: String, content?: String, timestamp?: String}[],
   keys: String[],
@@ -12,7 +11,6 @@ interface UserState {
 
 const initialState: UserState = {
   email: null,
-  username: null,
   displayName: null,
   messages: [],
   keys: [],
@@ -23,9 +21,8 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<{email?: String, username?: String, displayName?: String}>) => {
+    setUser: (state, action: PayloadAction<{email?: String, displayName?: String}>) => {
       state.email = action.payload.email ?? null;
-      state.username = action.payload.username ?? null;
       state.displayName = action.payload.displayName ?? null;
     },
     setMessages: (state, action: PayloadAction<{message_id?: String, sender?: String, content?: String, timestamp?: String}[]>) => {
