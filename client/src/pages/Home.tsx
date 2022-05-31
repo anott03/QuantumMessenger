@@ -123,11 +123,12 @@ const Home = () => {
               <button onClick={sendMessageClicked}>Send</button>
             </div>
           : filteredMessages().length !== 0 ? (
-            filteredMessages().map((message: any) =>
+            <> <button className="" onClick={() => { setRecipient(focusedUser); setFocusedUser("New Message"); }}/>
+              { filteredMessages().map((message: any) =>
               <div key={nanoid()} className="message mr-0">
                 <p><strong>{message.sender}</strong> at {message.timestamp}</p>
                 <p>{message.content}</p>
-              </div>)
+              </div>) } </>
             ) : (<h3 style={{textAlign: "center", marginTop: "2rem"}}>You have not yet received any messages from this user. Messages that you sent will not appear.</h3>)
           }
         </div>
