@@ -50,7 +50,11 @@ origins = [
     "http://localhost",
     "https://localhost",
     "http://localhost:3000",
-    "https://localhost:3000"
+    "https://localhost:3000",
+    "http://qm.twdl.us",
+    "https://qm.twdl.us",
+    "http://twdl.us",
+    "https://twdl.us"
 ]
 app.add_middleware(
     CORSMiddleware,
