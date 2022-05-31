@@ -18,14 +18,14 @@ const Home = () => {
   const interactingUsers = useInteractingUsers();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch()
-  const [focusedUser, setFocusedUser] = useState<String>("New Message")
-  const [recipient, setRecipient] = useState<String>("");
-  const [message, setMessage] = useState<String>("");
+  const [focusedUser, setFocusedUser] = useState<string>("New Message")
+  const [recipient, setRecipient] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
 
   const sendMessageClicked = (e: any) => {
     e.preventDefault();
 
-    async function encryptAndSend(message: String, receiver: String) {
+    async function encryptAndSend(message: string, receiver: string) {
       // create ID for message and generate a key
       let messageId = nanoid();
       const key = await keygen(messageId);
@@ -49,9 +49,9 @@ const Home = () => {
       sendMessage(messageId, xorBytes, receiver);
     }
 
-    let _message: String = message;
+    let _message: string = message;
     if (focusedUser === "New Message") {
-      let _receiver: String = recipient.toLowerCase();
+      let _receiver: string = recipient.toLowerCase();
       //@ts-ignore
       setMessage("");
       setRecipient("");
