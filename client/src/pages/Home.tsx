@@ -18,9 +18,9 @@ const Home = () => {
   const interactingUsers = useInteractingUsers();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch()
-  const [focusedUser, setFocusedUser] = useState("New Message")
-  const [recipient, setRecipient] = useState("");
-  const [message, setMessage] = useState("");
+  const [focusedUser, setFocusedUser] = useState<String>("New Message")
+  const [recipient, setRecipient] = useState<String>("");
+  const [message, setMessage] = useState<String>("");
 
   const sendMessageClicked = (e: any) => {
     e.preventDefault();
@@ -51,7 +51,7 @@ const Home = () => {
 
     let _message: String = message;
     if (focusedUser === "New Message") {
-      let _receiver: String = recipient;
+      let _receiver: String = recipient.toLowerCase();
       //@ts-ignore
       setMessage("");
       setRecipient("");
