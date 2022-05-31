@@ -18,7 +18,6 @@ function useFetchMessages(): (userId: String) => Promise<void> {
       },
 
       body: JSON.stringify({
-        username: user.email,
         receiver_id: user.email,
       })
     }
