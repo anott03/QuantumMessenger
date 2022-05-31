@@ -7,7 +7,6 @@ import { useFetchMessages } from "../api/fetch-messsages";
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectUser, setUser } from '../redux/reducers/userSlice';
-import { setMessages } from "../redux/reducers/userSlice";
 import { signOut, getAuth } from 'firebase/auth';
 import { useInteractingUsers } from "../api/interacting-users";
 
