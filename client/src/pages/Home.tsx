@@ -123,7 +123,7 @@ const Home = () => {
               <button onClick={sendMessageClicked}>Send</button>
             </div>
           : filteredMessages().length !== 0 ? (
-            <> <button className="bg-violet-400 px-3 py-2 rounded-lg text-slate-900" onClick={() => { setRecipient(focusedUser); setFocusedUser("New Message"); }}>Reply</button>
+            <> <button className="bg-violet-400 px-3 py-2 rounded-lg text-slate-900" style={{margin: "5px", marginTop: 0, maxWidth: "5rem"}} onClick={() => { setRecipient(focusedUser); setFocusedUser("New Message"); }}>Reply</button>
               { filteredMessages().map((message: any) =>
               <div key={nanoid()} className="message mr-0">
                 <p><strong>{message.sender}</strong> at {message.timestamp}</p>
