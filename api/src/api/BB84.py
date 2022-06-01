@@ -1,7 +1,5 @@
-from random import sample
 from qiskit import QuantumCircuit, Aer, assemble, transpile
 from qiskit.providers.aer.library.save_instructions import save_statevector
-from numpy import mod
 import utils
 from qTeleportation import quantum_teleport
 
@@ -32,8 +30,6 @@ class ParallelBB84:
     # basis (Z or X) to "secure" the quantum information and eventually catch interceptions
     # Returns a quantum circuit with `key_len` quantum registers
     def encode_qubits(self, bits: list, bases: list):
-        print(f"Bits:        {''.join(list(map(str, bits)))}")
-        print(f"Alice Bases: {''.join(list(map(str, bases)))}")
         self.sender_bases = bases
         encoder_qc = QuantumCircuit(len(bits))
         current_qubit = 0
@@ -100,7 +96,6 @@ class ParallelBB84:
 
         # Step 3: generate bases and measure message on receiver's end
         receiver_bases = utils.get_random_numbers(self.key_len, self.sim)
-        print(f"Bob Bases:   {''.join(list(map(str, receiver_bases)))}")
         self.receiver_bases = receiver_bases
         self.masterQC.compose(
             self.measure_qubits(receiver_bases),
