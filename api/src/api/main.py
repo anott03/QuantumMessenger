@@ -6,6 +6,7 @@ from BB84 import ParallelBB84
 from collections import defaultdict
 from datetime import datetime, timezone
 import pytz
+from pymongo import MongoClient
 
 """
 --- QuantumMessenger API ---
@@ -44,6 +45,7 @@ metadata_tags = [
     }
 ]
 
+
 app = FastAPI()
 registered_users = {}  # keys: user IDs; values: UserData objects
 origins = [
@@ -63,6 +65,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+conn = MongoClient("mongodb+srv://qmadmin:quantummessenger@cluster0.a3ttm.mongodb.net/QM")
+client = conn["quantum-messenger"]
 
 active_user = None
 bb84 = ParallelBB84(5)
@@ -129,17 +134,20 @@ class Message:
         self.content = content
         self.timestamp = timestamp
 
+    def __str__(self):
+        return f"Sender: {self.sender}; Receiver: {self.receiver}; ID: {self.message_id}; content: {self.content}"
+
 # -- helper functions --
 def sort_timestamps(messages):
-    return list(sorted(messages, key=lambda x: int(x.timestamp), reverse=True))
+    return list(sorted(messages, key=lambda x: int(x["timestamp"]), reverse=True))
 
 def formatted_time(timestamp):
     return datetime.fromtimestamp(int(timestamp) / 1000, pytz.timezone("US/Eastern")).strftime(f"%-I:%M %p on %b %-d, %Y")
 
 
 # -- global variables and request models --
-keys = {}  # maps message IDs to associated keys
-inboxes = defaultdict(list)
+keys = client["keys"]
+
 
 class KeyGenRequest(BaseModel):
     message_id: str
@@ -165,7 +173,7 @@ class InteractingUserRequest(BaseModel):
 def generate_key(key_gen_req: KeyGenRequest):
     qc_state[key_gen_req.message_id] = bb84.sender_protocol()
     key = bb84.receiver_protocol(qc_state[key_gen_req.message_id])
-    keys[key_gen_req.message_id] = key
+    keys.insert_one({"message_id": key_gen_req.message_id, "key": key})
     return {"key": key}
 
 
@@ -177,33 +185,50 @@ def fetch_key(key_fetch_req: KeyFetchRequest):
 # -- message management endpoints --
 @app.post("/v1/send-message", tags=["send-message"])
 def send_message(send_req: SendMessageRequest):
-    inboxes[send_req.receiver_id].append(
-        Message(send_req.sender_id, send_req.receiver_id, send_req.message_id, send_req.message_content, send_req.timestamp)
-    )
+    user_collection = client[send_req.receiver_id]
+    user_collection.insert_one({"sender_id": send_req.sender_id,
+                                "receiver_id": send_req.receiver_id,
+                                "message_id": send_req.message_id,
+                                "content": send_req.message_content,
+                                "timestamp": send_req.timestamp})
 
 
 @app.post("/v1/fetch-messages", tags=["fetch-message"])
 def fetch_messages(fetch_req: FetchMessageRequest):
-    target_messages = sort_timestamps(inboxes[fetch_req.receiver_id])
-    return [{"message_id": message.message_id,
-             "key": keys[message.message_id],
-             "sender": message.sender,
-             "content": message.content,
-             "timestamp": formatted_time(message.timestamp)} for message in target_messages]
+    fetched_msgs = []
+    for msg in client[fetch_req.receiver_id].find():
+        print(msg)
+        fetched_msgs.append(msg)
+    target_messages = sort_timestamps(fetched_msgs)
+    msg_objects = []
+    for message in target_messages:
+        target_key = ""
+        for matching_key in keys.find({"message_id": message["message_id"]}):
+            target_key = matching_key["key"]
+        msg_objects.append(
+            {"message_id": message["message_id"],
+             "key": target_key,
+             "sender": message["sender_id"],
+             "content": message["content"],
+             "timestamp": formatted_time(message["timestamp"])})
+    
+    return msg_objects
 
 # -- misc endpoints --
 @app.post("/v1/interacting-users", tags=["interacting-users"])
 def interacting_users(user_req: InteractingUserRequest):
-    all_msgs = []  # stores messages along with their senders and receivers
-    for user, inbox in inboxes.items():
-        for msg in inbox:
-            all_msgs.append([msg, msg.sender, user])
+    all_msgs = []  # stores message timestamps along with their senders and receivers
+    for collection_name in client.list_collection_names():
+        if "@" not in collection_name:
+            continue
+        for msg in client[collection_name].find():
+            all_msgs.append([msg["timestamp"], msg["sender_id"], collection_name])
     interacting_msgs = []  # stores messages along with the user who interacted with the given user
     for info in all_msgs:
         if info[1] == user_req.username:
             interacting_msgs.append([info[0], info[2]])
         elif info[2] == user_req.username:
             interacting_msgs.append([info[0], info[1]])
-    interacting_msgs = list(sorted(interacting_msgs, key=lambda x: int(x[0].timestamp), reverse=True))
+    interacting_msgs = list(sorted(interacting_msgs, key=lambda x: int(x[0]), reverse=True))
     users = [item[1] for item in interacting_msgs]
     return {"users": list(dict.fromkeys(users))}
