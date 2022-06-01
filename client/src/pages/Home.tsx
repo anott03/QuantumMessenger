@@ -9,6 +9,7 @@ import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectUser, setUser } from '../redux/reducers/userSlice';
 import { signOut, getAuth } from 'firebase/auth';
 import { useInteractingUsers } from "../api/interacting-users";
+import * as EmailValidator from 'email-validator';
 
 const Home = () => {
   const keygen = useQuantumKeyGen();
@@ -21,11 +22,17 @@ const Home = () => {
   const [focusedUser, setFocusedUser] = useState<string>("New Message")
   const [recipient, setRecipient] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [invalidEmail, setInvalidEmail] = useState(false);
 
   const sendMessageClicked = (e: any) => {
     e.preventDefault();
-
-    async function encryptAndSend(message: string, receiver: string) {
+async function encryptAndSend(message: string, receiver: string) {
+      // validate email
+      let validEmail = EmailValidator.validate(recipient);
+      setInvalidEmail(!validEmail);
+      if (!validEmail) return;
+      
       // create ID for message and generate a key
       let messageId = nanoid();
       const key = await keygen(messageId);
@@ -118,9 +125,14 @@ const Home = () => {
         <div className="messages flex-0.8 ml-1 flex flex-col p-2 pt-0 w-full">
           { focusedUser == "New Message" ?
             <div className="w-full flex flex-col">
-              <input    className="rounded-lg px-3 py-2 flex-1 m-1 border-solid border-[1px] border-blue-400 bg-inherit focus:border-0" id="receiver-input" type="email" placeholder="Enter Recipient Here" value={recipient} onChange={(e: any) => setRecipient(e.target.value)}/>
-              <textarea className="rounded-lg px-3 py-2 flex-1 m-1 border-solid border-[1px] border-blue-400 bg-inherit focus:border-0" id="message-input" placeholder="Enter Message Here" value={message} onChange={(e: any) => setMessage(e.target.value)}/>
-              <button onClick={sendMessageClicked}>Send</button>
+              <input    className="rounded-lg px-3 py-2 flex-1 m-1 border-solid border-[1px] border-blue-400 bg-inherit focus:border-0" id="receiver-input" type="email" placeholder="name@example.com" value={recipient} onChange={(e: any) => setRecipient(e.target.value)}/>
+              { invalidEmail && <small className="px-3 text-red-300">Please enter a valid email address</small> }
+              <textarea className="rounded-lg px-3 py-2 flex-1 m-1 border-solid border-[1px] border-blue-400 bg-inherit focus:border-0" id="message-input" placeholder="Your message" value={message} onChange={(e: any) => setMessage(e.target.value)}/>
+              <div className="w-full flex flex-row items-center text-center">
+                <button className="m-auto mr-3 font-black" onClick={sendMessageClicked}>Send</button> 
+                <button className="m-auto ml-0 font-thin" onClick={() => {setShowExplanation(!showExplanation)}}><small>(What does this do?)</small></button>
+              </div>
+              { showExplanation && <div className="mx-52 my-5 border-solid border-[1px] border-violet-300 px-3 py-2">When you click ‘Send,’ you and the recipient exchange an encryption key with quantum information. This process is essentially unbreakable and impossible for a hacker to intercept without being caught.</div> }
             </div>
           : filteredMessages().length !== 0 ? (
             <> <button className="bg-violet-400 px-3 py-2 rounded-lg text-slate-900" style={{margin: "5px", marginTop: 0, maxWidth: "5rem"}} onClick={() => { setRecipient(focusedUser); setFocusedUser("New Message"); }}>Reply</button>
